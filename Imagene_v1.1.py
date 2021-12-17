@@ -8,7 +8,7 @@
 ##              ## Changed xlim: now left=0.1 and right=0.9
 ##              ## Reverted the condition for binarization of feature columns in Y_test and Y_pred for AUC calculations. Now, if value<=threshold then it gets binarized to 0 else to 1.
 ##Version 1.05: ##Using pickle module instead of joblib module to load model.pkl
-##Version 1.6: ##Adding multiTask lasso and multitask elastic net models
+##Version 1.1: ##Adding multiTask lasso and multitask elastic net models
 ##Author: Shrey Sukhadia
 #!/usr/bin/python
 import matplotlib as mpl
