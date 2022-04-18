@@ -5,8 +5,21 @@ ImaGene comprises of four modules: a) data pre-processing, b) correlation Analys
 
 For analytical operations, ImaGene requires two input files, each in Comma-Separated Value (CSV) format – one containing imaging features (and their measurements) and another containing omics features for a set of tumor samples. The imaging features can be acquired from feature extraction software such as PyRadiomics, LIFEx, or RaCaT by processing the tumor images using the respective segmentation labels (Koçak et al. 2019; Pfaehler et al. 2019; van Griethuysen et al. 2017). The omics features can be acquired from studies conducted on tumor ROIs in biopsy samples processed in pathological laboratories, and may consist of data pertaining to gene expression, SV (including CNV), SNV, or DNA methylation scores.
 
+# New version 2:
+Adding Imagene_v2_commented.py
+New features:
+-Automated permutation tests (n=20) on labels reported with AUC value > 0.9 and R-square > 0.25.
+  -Reports p_value and 95% Confidence Intervals for AUCs obtained at various decision thresholds from permutation tests.
+  -Reports p_value and 95% Confidence Intervals for R-squares obtained from permutation tests.
 
-# Command Line interface (CLI) using docker
+-Calculating R-squares using the sklearn.metrics.r2_score method. The results indeed match to the R-square calculated using the formula presented in the manuscript i.e. R-square = 1 - v-square, where v-square = 1- ( RMSE(y)/Stdev(y) )^2
+
+-Calculating Feature Importances using "model.feature_importances_" method for DecisionTree model and "model.coef_" method for regression models.
+
+-Added comments for function descriptions and other crucial steps (such as AUC calculations, feature importance reporting, etc.) within the respective functions.
+
+
+# Command Line interface (CLI) operation using docker
 
 Step 1: Install Docker on an Ubuntu Machine using the following docker-installation documentation: https://docs.docker.com/engine/install/ubuntu/
         For MacOS, use: https://docs.docker.com/desktop/mac/install/. Use docker using terminal app in Mac thereafter.
