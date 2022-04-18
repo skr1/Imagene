@@ -23,10 +23,6 @@ Step 3: Check the loaded image
 Step 4: Run the docker image
 
         docker run -v "$(pwd)":/data shreysukhadia/imagene:2.0 Imagene_v2.py --data /data/Supplementary_Table_BC_Radiomic_features.csv --label /data/Supplementary_Table_BC_Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
-        
-        
-# Use ImaGene through a cloud GUI (website): https://www.imagene.pgxguide.org/index.php
-  Register with a free account and start using it. Kindly refer manuscript for the steps listed therein.
       
 
 
