@@ -7,7 +7,7 @@ For analytical operations, ImaGene requires two input files, each in Comma-Separ
 
 # New version 2:
 
-Adding Imagene_v2_commented.py (only runs from within the docker image which is packaged as "Imagene_v2.tar.gz" and attached above. Steps to load docker package and run it successfully aare described in the subsequent CLI-section below.
+Adding Imagene_v2_2.py (only runs from within the docker image which is packaged as "Imagene_v2_2.tar.gz" and attached above. Steps to load docker package and run it successfully aare described in the subsequent CLI-section below.
 
 Changes in v2:
 1. Automated permutations (n=20) conducted on labels that have AUC value > 0.9 and R-square > 0.25 from testing of models.
@@ -25,9 +25,9 @@ From the results of the permutation tests, users could calculate p_value and 95%
 Step 1: Install Docker on an Ubuntu Machine using the following docker-installation documentation: https://docs.docker.com/engine/install/ubuntu/
         For MacOS, use: https://docs.docker.com/desktop/mac/install/. Use docker using terminal app in Mac thereafter.
 
-Step 2: Load the docker container package Imagene_v2.tar.gz
+Step 2: Load the docker container package Imagene_v2_2.tar.gz
         
-        docker load < Imagene_v2.tar.gz
+        docker load < Imagene_v2_2.tar.gz
         
 Step 3: Check the loaded image
 
@@ -36,12 +36,12 @@ Step 3: Check the loaded image
         Output:
         --------------------------------------------------------------------------------------------------
         REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
-        shreysukhadia/imagene   2.0                 f9cbd4bab876        2 days ago          1.3 GB
+        shreysukhadia/imagene   2.2                 37297fbf58cb        12 days ago         1.3 GB
         --------------------------------------------------------------------------------------------------
 
 Step 4: Run the docker image
 
-        docker run -v "$(pwd)":/data shreysukhadia/imagene:2.0 Imagene_v2.py --data /data/Supplementary_Table_BC_Radiomic_features.csv --label /data/Supplementary_Table_BC_Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
+        docker run -v "$(pwd)":/data shreysukhadia/imagene:2.2 Imagene_v2_2.py --data /data/Supplementary_Table_BC_Radiomic_features.csv --label /data/Supplementary_Table_BC_Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
       
         Output: Same as indicated in supplementary files in the repo above and in the manuscript.
 
