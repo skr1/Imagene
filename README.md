@@ -45,6 +45,10 @@ Step 4: Run the docker image
       
         Output: Same as indicated in supplementary files in the repo above and in the manuscript.
 
+# In case user wants to try including patient outcomes alongwith radiomic and/or omic features:
+The user could put the patient outcomes as a column in a comma-separated values (csv) file and use that as a “label” file, and put radiomics or genomics (or radiomics and genomics combined) features as columns in another csv file and use that as a “data” file. The rows in each of these files have to represent the sample names and the values in the feature columns would represent the measures of the respective feature (for example: texture, shape, size or intensity measure for radiomics, gene expressions for genomics and patient outcome decision measures for clinical outcomes). This way the AI models would get trained and tested to predict patient clinical outcomes from radiomics or genomics or radio-genomics combined features.
+
+
 
 REFERENCES:
 
