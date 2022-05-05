@@ -1,2 +1,4 @@
 *.gz filter=lfs diff=lfs merge=lfs -text
 *.pdf filter=lfs diff=lfs merge=lfs -text
+HNSCC_Supplementary.zip filter=lfs diff=lfs merge=lfs -text
+IBC_Supplementary.zip filter=lfs diff=lfs merge=lfs -text
