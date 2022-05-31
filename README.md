@@ -40,10 +40,12 @@ Step 3: Check the loaded image
         --------------------------------------------------------------------------------------------------
 
 Step 4: Run the docker image
+        [Note: Download the data, label and config files as "Supplementary_Table_BC-Radiomic_features.csv", "Supplementary_Table_BC-Gene_FPKM.csv" and "config_IBC_LR.ini" respectively from the repo above. To download, please click on each file (in repo above) and then on the following page click on "Raw" button. Once the raw file opens up, go to your browsers menu (on top of your broswer) and then click on 'File', and then "Save page as" option therein, and save the file with its respective name (as it is).  After downloading of all the three files completed, kindly execute the command as given below from the same working directory in linux/mac where you saved those three files]
 
         docker run -v "$(pwd)":/data shreysukhadia/imagene:2.2 Imagene_v2_2.py --data /data/Supplementary_Table_BC-Radiomic_features.csv --label /data/Supplementary_Table_BC-Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
       
-        Output: Same as indicated in supplementary files in the repo above and in the manuscript.
+        
+        Output files: Same as indicated in supplementary (zip) files in the repo above and in the manuscript.
 
 # In case user wants to try including patient outcomes alongwith radiomic and/or omic features:
 The user could put the patient outcomes as a column in a comma-separated values (csv) file and use that as a “label” file, and put radiomics or genomics (or radiomics and genomics combined) features as columns in another csv file and use that as a “data” file. The rows in each of these files have to represent the sample names and the values in the feature columns would represent the measures of the respective feature (for example: texture, shape, size or intensity measure for radiomics, gene expressions for genomics and patient outcome decision measures for clinical outcomes). This way the AI models would get trained and tested to predict patient clinical outcomes from radiomics or genomics or radio-genomics combined features.
