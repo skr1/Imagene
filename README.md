@@ -7,7 +7,7 @@ For analytical operations, ImaGene requires two input files, each in Comma-Separ
 
 # New version 2:
 
-Adding Imagene_v2_2.py (only runs from within the docker image which is packaged as "Imagene_v2_2.tar.gz" and attached above. Steps to load docker package and run it successfully aare described in the subsequent CLI-section below.
+Adding Imagene_v2_2.py (This python script runs has been packaged in the docker image-packet "Imagene_v2_2.tar.gz" available to download from the repo above). Steps to load docker package and run it successfully are described in the subsequent CLI-section below.
 
 Changes in v2:
 1. Automated permutations (n=20) conducted on labels that have AUC value > 0.9 and R-square > 0.25 from testing of models.
@@ -23,7 +23,7 @@ From the results of the permutation tests, users could calculate p_value and 95%
 # Command Line interface (CLI) operation using docker
 
 Step 1: Install Docker on an Ubuntu Machine using the following docker-installation documentation: https://docs.docker.com/engine/install/ubuntu/
-        For MacOS, use: https://docs.docker.com/desktop/mac/install/. Use docker using terminal app in Mac thereafter.
+        For MacOS, use: https://docs.docker.com/desktop/mac/install/. Use docker using terminal app in Mac/Ubuntu thereafter.
 
 Step 2: Load the docker container package Imagene_v2_2.tar.gz
         
