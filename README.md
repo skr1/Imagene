@@ -41,7 +41,7 @@ Step 3: Check the loaded image
 
 Step 4: Run the docker image
 
-        docker run -v "$(pwd)":/data shreysukhadia/imagene:2.2 Imagene_v2_2.py --data /data/Supplementary_Table_BC_Radiomic_features.csv --label /data/Supplementary_Table_BC_Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
+        docker run -v "$(pwd)":/data shreysukhadia/imagene:2.2 Imagene_v2_2.py --data /data/Supplementary_Table_BC-Radiomic_features.csv --label /data/Supplementary_Table_BC-Gene_FPKM.csv --config /data/config_IBC_LR.ini > log_file 2>&1 &
       
         Output: Same as indicated in supplementary files in the repo above and in the manuscript.
 
