@@ -189,11 +189,15 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
             #return dataframe_scaled
         else:
             print("Invalid normalization type/method detected. Skipping normalization. If you wish to normalize this dataset, then correct the normalization_method in the config file and rerun. Proceeding with no normalization")
-            return dataframe
-        dataframe_scaled=pd.DataFrame(data=dataframe_scaled,columns=header)
+            ## The dataframe needs to be converted to numpy to be consistent with the return value when normalization method is detected and normalization actually happens.
+            d_array = dataframe.to_records(index='False')
+            return d_array
+        ##SILENTING conversion of numpy into dataframe as we do want to return numpy array now that the calling of normal_dataframe occurs outside the preprocessing function.
+        #dataframe_scaled=pd.DataFrame(data=dataframe_scaled,columns=header)
         return dataframe_scaled
     else:
-        return dataframe
+        d_array = dataframe.to_records(index='False')
+        return d_array
 ##Preprocessing of datasets    
 def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True):
     #try:
@@ -255,6 +259,11 @@ def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True
 def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header):
     outfileHTML=open("/data/"+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
+    ##Converting numpy arrays to dataframe to perform normalization on them
+    train=pd.DataFrame(data=train,columns=dataframe_header)
+    test=pd.DataFrame(data=test,columns=dataframe_header)
+    Y_train=pd.DataFrame(data=Y_train,columns=label_header)
+    Y_test=pd.DataFrame(data=Y_test,columns=label_header)
     #if mode_=="Train":
     ##Introducing normalizations for TRAIN and TEST datasets.
     if data_normalize_method != 'none':
