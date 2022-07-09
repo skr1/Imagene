@@ -5,6 +5,10 @@ ImaGene comprises of four modules: a) data pre-processing, b) correlation Analys
 
 For analytical operations, ImaGene requires two input files, each in Comma-Separated Value (CSV) format – one containing imaging features (and their measurements) and another containing omics features for a set of tumor samples. The imaging features can be acquired from feature extraction software such as PyRadiomics, LIFEx, or RaCaT by processing the tumor images using the respective segmentation labels (Koçak et al. 2019; Pfaehler et al. 2019; van Griethuysen et al. 2017). The omics features can be acquired from studies conducted on tumor ROIs in biopsy samples processed in pathological laboratories, and may consist of data pertaining to gene expression, SV (including CNV), SNV, or DNA methylation scores.
 
+# Silenting Correlations Threshold based filtering:
+
+In case users wish to not filter correlations based on a correlation threshold, they could silent such filtration by setting the value of Correlation Threshold parameter to '-1'. Currently, the default value for that parameter is set to '0.5'.
+
 # New version 2:
 
 Adding Imagene_v2_2.py (This python script runs has been packaged in the docker image-packet "Imagene_v2_2.tar.gz" available to download from the repo above). Steps to load docker package and run it successfully are described in the subsequent CLI-section below.
@@ -46,6 +50,7 @@ Step 4: Run the docker image
       
         
         Output files: Same as indicated in supplementary (zip) files in the repo above and in the manuscript.
+
 
 # In case user wants to try including patient outcomes alongwith radiomic and/or omic features:
 The user could put the patient outcomes as a column in a comma-separated values (csv) file and use that as a “label” file, and put radiomics or genomics (or radiomics and genomics combined) features as columns in another csv file and use that as a “data” file. The rows in each of these files have to represent the sample names and the values in the feature columns would represent the measures of the respective feature (for example: texture, shape, size or intensity measure for radiomics, gene expressions for genomics and patient outcome decision measures for clinical outcomes). This way the AI models would get trained and tested to predict patient clinical outcomes from radiomics or genomics or radio-genomics combined features.
