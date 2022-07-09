@@ -12,6 +12,7 @@
 ##Version 1.1: ##Adding multiTask lasso and multitask elastic net models
 ##Version 2.0: Added Feature importances and permutation tests for R-square and AUC. R-square gets calculated using sklearn.metrics.r2_score method.
 ##Version 2.2: if pVal_adj_method="none" (i.e. p_adjust=p_value) or corr_threshold (aka correlation coefficient threshold) < 0.0 (for ex: -1.0), then no <0.05 filtering on p_adjust value.
+##Note: Please monitor github commits for version updates after Version: 2.2.
 ##Author: Shrey Sukhadia
 #!/usr/bin/python
 from cProfile import label
@@ -194,7 +195,7 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
     else:
         return dataframe
 ##Preprocessing of datasets    
-def preprocessing(dataframe , label, data_type, label_type, data_normalize_method, label_normalize_method , mode, checkNA = True):
+def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True):
     #try:
         outfileHTML=open("/data/"+model_type+".output.html",'a')
         outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
@@ -227,18 +228,18 @@ def preprocessing(dataframe , label, data_type, label_type, data_normalize_metho
         dataframe = dataframe.drop(['ID'],axis = 1)
         dataframe_header=list(dataframe.keys())
         
-        
-        if data_normalize_method != 'none':
-            print("performing "+data_normalize_method+" normalization for "+data_type+" features")
-            outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
-            dataframe = normal_dataframe(dataframe ,data_normalize_method, dataframe_header)
+        ## SILENTING normalization on entire dataset as train and test dataset has to undergo normalizations differently later, thereby preventing leakage of test into train.
+        #if data_normalize_method != 'none':
+        #    print("performing "+data_normalize_method+" normalization for "+data_type+" features")
+        #    outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
+        #    dataframe = normal_dataframe(dataframe ,data_normalize_method, dataframe_header)
             #print(dataframe)
-        if isinstance(label,pd.DataFrame):
-            if label_normalize_method != 'none':
-                #print(label)
-                print("performing "+label_normalize_method+" for "+label_type+" features")
-                outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features"+"</h3>"+"\n")
-                label = normal_dataframe(label ,label_normalize_method, label_header)
+        #if isinstance(label,pd.DataFrame):
+        #    if label_normalize_method != 'none':
+        #        #print(label)
+        #        print("performing "+label_normalize_method+" for "+label_type+" features")
+        #        outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features"+"</h3>"+"\n")
+        #        label = normal_dataframe(label ,label_normalize_method, label_header)
         outfileHTML.close()
         #c_=pd.concat([dataframe1, dataframe2], axis=1)
         dataframe = dataframe.loc[:, (dataframe!=0).any(axis=0)]; nan_value = float("NaN"); dataframe.replace("", nan_value, inplace=True); dataframe=dataframe.dropna()
@@ -251,10 +252,42 @@ def preprocessing(dataframe , label, data_type, label_type, data_normalize_metho
         return dataframe , label, sampleIDs, label_header, dataframe_header
 
 ##Train-test split function    
-def splitdata(dataframe , label, t_size, mode_):
+def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header):
     outfileHTML=open("/data/"+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
     #if mode_=="Train":
+    ##Introducing normalizations for TRAIN and TEST datasets.
+    if data_normalize_method != 'none':
+        print("performing "+data_normalize_method+" normalization for "+data_type+" features")
+        
+        ##NORMALIZING TRAIN data
+        outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TRAIN set"+"</h3>"+"\n")
+        train = normal_dataframe(train, data_normalize_method, dataframe_header)
+        print("Printing Normalized Train data:")
+        print(train)
+
+        ##NORMALIZING TEST set
+        outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TEST set"+"</h3>"+"\n")
+        test = normal_dataframe(test, data_normalize_method, dataframe_header)
+        print("Printing Normalized Test data:")
+        print(test)
+
+    if isinstance(label,pd.DataFrame):
+        if label_normalize_method != 'none':
+            print("performing "+label_normalize_method+" for "+label_type+" features")
+            
+            ##NORMALIZING TRAINING label
+            outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
+            Y_train = normal_dataframe(Y_train, label_normalize_method, label_header)
+            print("Printing Normalized Train label:")
+            print(Y_train)
+
+            ##NORMALIZING TEST label
+            outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
+            Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
+            print("Printing Normalized Test label:")
+            print(Y_test)
+    
     outfileHTML.write("<h1 style=text-align:center;color:purple>"+"-------------------------------Number of Samples for Training and Testing---------------------------------"+"</h1>"+"\n")
     outfileHTML.write("<h3>"+"No. of samples for training:{}".format(len(train))+"</h3>"+"\n")
     outfileHTML.write("<h3>"+"No. of samples for test:{}".format(len(test))+"</h3>"+"\n")
@@ -820,7 +853,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         label='NA'
     #if(mode!='predict'):
     #    correlation(dataframe,label)
-    dataframe , label, sampleIDs, label_header, dataframe_header =  preprocessing(dataframe , label, data_type, label_type, data_normalize_method, label_normalize_method, mode)
+    dataframe , label, sampleIDs, label_header, dataframe_header =  preprocessing(dataframe , label, data_type, label_type, mode)
     #print "after dataframe"; print dataframe;
     #print "after label"; print label;
     
@@ -867,7 +900,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             select_label_var_list_for_validate=label_header
 
     if mode == 'Train':
-        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode)
+        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header)
         print("Staring Training of :{}".format(model_type))
         model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, trainmodel = 'True')
         if save == 'True':
@@ -895,6 +928,10 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             outfileHTML.write("<h2 style=text-align:center;color:green>"+"------------------------Samples for Prediction-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"No. of samples input for prediction: "+str(len(sampleIDs))+"</h3>")
             #outfileHTML.close()
+
+            ##Normalizing data
+            outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for prediction set"+"</h3>"+"\n")
+            dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
 
             Y_pred = predict(model, dataframe)
             if prediction_out == "NULL":
@@ -948,6 +985,16 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             outfileHTML.close()
             #for i in label_header:
             #dataframe = dataframe.loc[:, (dataframe<=0).any(axis=0)]
+            
+            ##Normalizing data
+            outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
+            dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
+
+            ##Normalizing label
+            outfileHTML.write("<h3>"+"performing "+label_normalize_method+" normalization for "+label_type+" features"+"</h3>"+"\n")
+            label = normal_dataframe(label, label_normalize_method, label_header)
+            
+            ##Evaluate
             evaluate(model, dataframe , label, select_label_var_list_for_validate, 'validation', model_type, data_type, label_type)
         except IOError:
             print("Probably saved model file is not provided/check path")
