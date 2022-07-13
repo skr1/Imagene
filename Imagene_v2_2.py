@@ -28,6 +28,7 @@ import pickle
 import configparser
 import ast
 import argparse
+from sklearn.feature_selection import RFECV
 from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import MinMaxScaler
