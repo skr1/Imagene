@@ -308,7 +308,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     return train , Y_train , test , Y_test
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
-def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, trainmodel):
+def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, trainmodel, rfe_cv_flag):
     '''
     initializing model and training the model
     '''
@@ -416,6 +416,38 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             '''
             performing training
             '''
+            ##ADDING RFECV
+            if(rfe_cv_flag==1):
+                if gridsearch='True':
+                    k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
+                else:
+                    k_fold_=cv_par ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
+                rfecv = RFECV(
+                    estimator=model,
+                    step=1,
+                    cv=StratifiedKFold(2),
+                    scoring=scoring_par,
+                    min_features_to_select=1,
+                )
+                rfecv.fit(train, Y_train)
+                print("Optimal number of features : %d" % rfecv.n_features_)
+                mp.figure()
+                mp.xlabel("Number of features selected")
+                mp.ylabel("Cross validation score (accuracy)")
+                mp.plot(
+                    range(min_features_to_select, len(rfecv.grid_scores_) + min_features_to_select),
+                    rfecv.grid_scores_,
+                )
+                mp.savefig("/data/"+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
+                mp.clf()
+                outfileHTML.write("<h3>"+heading+"Automatic tuning of the number of features selected with cross-validation using RFECV"+"</h3>"+"\n")
+                data_image_rfecv = open("/data/"+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
+                img_tag_rfecv = '<img src="data:image/png;base64,{0}">'.format(data_image_rfecv)
+                outfileHTML.write(img_tag_rfecv+"\n")
+
+                ##Transforming Train to selected features only
+                train=rfecv.transform(train)
+
             #outfileHTML=open(model_type+".output.html",'a')
             #outfileHTML.write("<h1>"+"--------------------------Model Summary-----------------------"+"</h1>"+"\n")
             outfileHTML.write("<h3>"+"Model Type : "+method+"</h3>"+"\n")
@@ -839,7 +871,7 @@ def predict(model , test):
     Y_pred = model.predict(test)
     return Y_pred
 ##Defining the entire process starting from training through testing and validation per the modes of operation specified by user.       
-def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict):
+def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=None):
     #outfileHTML=open(model_type+".output.html",'a')
     if os.path.isfile(data_):
         if os.path.getsize(data_)!=0:
@@ -868,7 +900,10 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     #print "after label"; print label;
     
     if(mode!='predict' and mode!='validate'):
-        select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method)
+        if(rfe_cv_flag==0):
+            select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method)
+        elif(rfe_cv_flag==1):
+            select_data_var_list=dataframe_header; select_label_var_list=label_header
         print select_label_var_list
         #print label
         #print label[select_label_var_list]
@@ -912,7 +947,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     if mode == 'Train':
         train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header)
         print("Staring Training of :{}".format(model_type))
-        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, trainmodel = 'True')
+        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, trainmodel = 'True', rfe_cv_flag)
         if save == 'True':
             try:
                 joblib.dump(model, str(save_dir) + str(model_type)+ ".pkl" )
@@ -1129,4 +1164,6 @@ if __name__ == "__main__":
     ## CALLING THE PROCESS FUNCTION.
 
 
-    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict)
+    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=0)
+    ##Calling process again with feature selection flag (rfe_cv_flag) equal to 1, so that the feature selection performed using RFECV (Recursive Feature Elimination with Cross Validation), and correlation module is skipped completely.
+    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=1)
