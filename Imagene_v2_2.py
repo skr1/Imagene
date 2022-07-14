@@ -815,16 +815,17 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         for i in decision_thresholds:
             print i
             Y_test_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_test_df[[l]])),threshold=i)
-            Y_pred_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_pred_df[[l]])),threshold=i)
+            #Y_pred_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_pred_df[[l]])),threshold=i)
+            Y_pred_df_n=Y_pred_df[[l]]##Keeping Ypredict to be continuous,i.e. as it is.
             if(np.all((Y_test_df_n==0))):
                 print("For decision threshold "+str(i)+":")
                 print("Seems all values for label column "+l+" are zero. Hence not considering it for decision_threshold vs AUC plot")
             else:
                 #fpr, tpr, thresholds = roc_curve(Y_test_df[[l]], Y_pred_df[[l]])
                 fpr, tpr, thresholds = roc_curve(Y_test_df_n,Y_pred_df_n)
-                #print thresholds
-                #print fpr
-                #print tpr
+                print thresholds
+                print fpr
+                print tpr
                 #print auc(fpr,tpr)
                 #print l; print i
                 AUC_value=auc(fpr,tpr)
