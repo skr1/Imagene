@@ -142,11 +142,11 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
         mp.xticks(rotation=90)
         mp.yticks(size=7)
         mp.savefig('/data/'+'Correlation_for_'+i+'_features.png',orientation='landscape',dpi=90,bbox_inches='tight')
-        data_image = open("/data/"+'Correlation_for_'+i+'_features.png', 'rb').read().encode('base64').replace('\n', '')
+        data_image = open("/data/"+tagDir+'Correlation_for_'+i+'_features.png', 'rb').read().encode('base64').replace('\n', '')
         image_tag_list.append('<img src="data:image/png;base64,{0}" style="max-width:50%;">'.format(data_image))
         mp.clf()
 
-    outfileHTML=open("/data/"+model_type+".output.html",'a')
+    outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     #outfileHTML.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report"+"</h1>"+"\n")
     outfileHTML.write("<h2 style=text-align:center;>"+"--------------------------Multivariate Correlations ("+corr_method+" based)-----------------------"+"</h2>"+"\n".join(image_tag_list)+"\n")
     outfileHTML.close()
@@ -202,7 +202,7 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
 ##Preprocessing of datasets    
 def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True):
     #try:
-        outfileHTML=open("/data/"+model_type+".output.html",'a')
+        outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
         outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
         if(isinstance(label,pd.DataFrame)):
             outfileHTML.write("<h3>"+"No. of "+label_type+" features provided:"+str(len(label.columns)-1)+"</h3>")   
@@ -258,7 +258,7 @@ def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True
 
 ##Train-test split function    
 def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header):
-    outfileHTML=open("/data/"+model_type+".output.html",'a')
+    outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
     ##Converting numpy arrays to dataframe to perform normalization on them
     train=pd.DataFrame(data=train,columns=dataframe_header)
@@ -312,7 +312,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
     '''
     initializing model and training the model
     '''
-    outfileHTML=open("/data/"+model_type+".output.html",'a')
+    outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     outfileHTML.write("<h2 style=text-align:center;color:blue>"+"--------------------------Model Summary-----------------------"+"</h2>"+"\n")
     if method in ['DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel']:
         if gridsearch == 'True':
@@ -438,10 +438,10 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     range(min_features_to_select, len(rfecv.grid_scores_) + min_features_to_select),
                     rfecv.grid_scores_,
                 )
-                mp.savefig("/data/"+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
+                mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
                 mp.clf()
                 outfileHTML.write("<h3>"+heading+"Automatic tuning of the number of features selected with cross-validation using RFECV"+"</h3>"+"\n")
-                data_image_rfecv = open("/data/"+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
+                data_image_rfecv = open("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
                 img_tag_rfecv = '<img src="data:image/png;base64,{0}">'.format(data_image_rfecv)
                 outfileHTML.write(img_tag_rfecv+"\n")
 
@@ -492,7 +492,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     '''
     evalauting the model preformance 
     '''
-    outfileHTML=open("/data/"+model_type+".output.html",'a')
+    outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     Y_pred = model.predict(test)
 
     if(prefix=="train_eval"):
@@ -618,8 +618,8 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     #    count=count+1
     #    if(count==11):
     #        count=0
-    rmse_n_mean_n_std_n_ratio_df.to_csv("/data/"+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.csv')
-    rmse_n_mean_n_std_n_ratio_n_r2_score_df.to_csv("/data/"+prefix+'_'+model_type+'_rmse_mean_std_and_ratio_and_r2_score.csv')
+    rmse_n_mean_n_std_n_ratio_df.to_csv("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.csv')
+    rmse_n_mean_n_std_n_ratio_n_r2_score_df.to_csv("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio_and_r2_score.csv')
     #if len(list(rmse_n_mean_n_std_n_ratio_df.index.values)) <= 40:
     #    mp.legend(loc=(1.04,0))
     #else:
@@ -630,7 +630,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.title("Observed Mean and Ratio_of_RMSE_and_Stdev",size=12)
     mp.legend(loc=(1.04,0.5))
     #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
-    mp.savefig("/data/"+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png',bbox_inches='tight')
+    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png',bbox_inches='tight')
     mp.clf()
 
     Only_ratio_n_r2_score_df=rmse_n_mean_n_std_n_ratio_n_r2_score_df[["Ratio_of_RMSE_and_Stdev","r2_score"]]
@@ -641,7 +641,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.title("Ratio_of_RMSE_and_Stdev and r2_score",size=12)
     mp.legend(loc=(1.04,0.5))
     #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
-    mp.savefig("/data/"+prefix+'_'+model_type+'_rmse_std_and_ratio_and_r2_score.png',bbox_inches='tight')
+    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_rmse_std_and_ratio_and_r2_score.png',bbox_inches='tight')
     mp.clf()
     Y_test_low_ratio_df=Y_test_df[label_header_low_ratio]
     Y_pred_low_ratio_df=Y_pred_df[label_header_low_ratio]
@@ -662,7 +662,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     else:
         mp.legend(bbox_to_anchor=(1.04, 1.04, 2.04, 2.04), loc='upper left', ncol=2, mode="expand")
     #mp.savefig('test_result_plots_low_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
-    mp.savefig("/data/"+prefix+'_'+model_type+'_test_result_plots_low_ratio.png',bbox_inches='tight')
+    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_test_result_plots_low_ratio.png',bbox_inches='tight')
     mp.clf()
 
     
@@ -687,7 +687,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.title("Actual_values v/s Predicted Values - for features with high RMSE:Actual_Stdev",size=9)
     mp.legend(loc=(1.04,0))
     #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
-    mp.savefig("/data/"+prefix+'_'+model_type+'_test_result_plots_high_ratio.png',bbox_inches='tight')
+    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_test_result_plots_high_ratio.png',bbox_inches='tight')
     mp.clf()
 
     
@@ -699,7 +699,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         #mse_df=pd.DataFrame({'Label_features':label_list, 'MSE':mse_val})
         #print(mse_df)
         #mse_df.set_index('Label_features')
-        ratio_low_df.to_csv("/data/"+prefix+"_"+model_type+"_Labels_with_Low_Ratio.csv")
+        ratio_low_df.to_csv("/data/"+tagDir+prefix+"_"+model_type+"_Labels_with_Low_Ratio.csv")
         #mean_for_rmse_low_df.to_csv(prefix+"_"+model_type+"_Original_Mean_for_Labels_with_Low_RMSE.csv")
 
         #rmse_low_n_mean_df = rmse_low_df.merge(mean_for_rmse_low_df, how='outer', left_index=True, right_index=True)
@@ -714,7 +714,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
             mp.xticks(size=3)
         ##mp.title(i,size=1)
         mp.title("Low RMSE/Stdev for the label features",size=12)
-        mp.savefig("/data/"+prefix+'_'+model_type+'_Low_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
+        mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_Low_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
         mp.clf()
 
         #pd.plotting.scatter_matrix(rmse_low_n_mean_df)
@@ -730,7 +730,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         #mse_df=pd.DataFrame({'Label_features':label_list, 'MSE':mse_val})
         #print(mse_df)
         #mse_df.set_index('Label_features')
-        ratio_high_df.to_csv("/data/"+prefix+"_"+model_type+"_Labels_with_High_Ratio.csv")
+        ratio_high_df.to_csv("/data/"+tagDir+prefix+"_"+model_type+"_Labels_with_High_Ratio.csv")
         #mean_for_rmse_high_df.to_csv(prefix+"_"+model_type+"_Original_Mean_for_Labels_with_High_RMSE.csv")
 
         #rmse_high_n_mean_df = rmse_high_df.merge(mean_for_rmse_high_df, how='outer', left_index=True, right_index=True)
@@ -741,7 +741,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         mp.xticks(rotation=90)
         mp.xticks(size=4)
         mp.title("High RMSE/Stdev for the label features",size=12)
-        mp.savefig("/data/"+prefix+'_'+model_type+'_High_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
+        mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_High_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
         mp.clf()
 
         #pd.plotting.scatter_matrix(rmse_high_n_mean_df)
@@ -765,16 +765,16 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     outfileHTML.write("<h5>"+"All such features with their High 'RMSE/Stdev' values could be found in output file: "+prefix+"_"+model_type+"_Labels_with_High_Ratio.csv"+"</h4>"+"\n"+"\n")
     outfileHTML.write("<h3>"+heading+" for label features showing Low 'RMSE/Stdev' (<=1.0)"+"</h3>"+"\n")
     
-    data_image1 = open("/data/"+prefix+'_'+model_type+'_test_result_plots_low_ratio.png', 'rb').read().encode('base64').replace('\n', '')
+    data_image1 = open("/data/"+tagDir+prefix+'_'+model_type+'_test_result_plots_low_ratio.png', 'rb').read().encode('base64').replace('\n', '')
     img_tag1 = '<img src="data:image/png;base64,{0}">'.format(data_image1)
     outfileHTML.write(img_tag1+"\n")
 
-    if(os.path.exists("/data/"+prefix+'_'+model_type+'_Low_Ratio_plot.png')):
-        data_image2 = open("/data/"+prefix+'_'+model_type+'_Low_Ratio_plot.png', 'rb').read().encode('base64').replace('\n', '')
+    if(os.path.exists("/data/"+tagDir+prefix+'_'+model_type+'_Low_Ratio_plot.png')):
+        data_image2 = open("/data/"+tagDir+prefix+'_'+model_type+'_Low_Ratio_plot.png', 'rb').read().encode('base64').replace('\n', '')
         img_tag2 = '<img src="data:image/png;base64,{0}">'.format(data_image2)
         outfileHTML.write(img_tag2+"\n")
     
-    data_image3 = open("/data/"+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png', 'rb').read().encode('base64').replace('\n', '')
+    data_image3 = open("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png', 'rb').read().encode('base64').replace('\n', '')
     img_tag3 = '<img src="data:image/png;base64,{0}">'.format(data_image3)
     outfileHTML.write(img_tag3+"\n")
 
@@ -784,7 +784,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     decision_thresholds=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
     ##Adding feature-importance calculations
-    FI_handle=open("/data/"+prefix+"_"+"FeatureImportances.txt",'w+')
+    FI_handle=open("/data/"+tagDir+prefix+"_"+"FeatureImportances.txt",'w+')
     X_features=list(test.columns)
     Y_features=list(Y_test.columns)
     if(model_type!="DecisionTree"):
@@ -802,7 +802,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
 
 
     ##CALCULATE AUCs BASED on the devision thresholds list above.
-    AUC_fH=open("/data/"+prefix+"_"+"AUC_values.txt",'w+')
+    AUC_fH=open("/data/"+tagDir+prefix+"_"+"AUC_values.txt",'w+')
     AUC_fH.write("label"+"\t"+"AUC_value"+"\t"+"decision_threshold"+"\n")
     label_resulted=[]
     for l in select_label_var_list:
@@ -855,9 +855,9 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.ylim(bottom=0.0)
     mp.xlim(left=0.1, right=0.9)
     #mp.xticks([0.0,0.2,0.4,0.6,0.8,1.0])
-    mp.savefig("/data/"+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png',orientation='landscape',dpi=100,bbox_inches='tight')
+    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png',orientation='landscape',dpi=100,bbox_inches='tight')
     mp.clf()
-    data_image4 = open("/data/"+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png', 'rb').read().encode('base64').replace('\n', '')
+    data_image4 = open("/data/"+tagDir+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png', 'rb').read().encode('base64').replace('\n', '')
     img_tag4 = '<img src="data:image/png;base64,{0}">'.format(data_image4)
     outfileHTML.write(img_tag4+"\n")
 
@@ -873,6 +873,11 @@ def predict(model , test):
     return Y_pred
 ##Defining the entire process starting from training through testing and validation per the modes of operation specified by user.       
 def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=None):
+    if(rfe_cv_flag==None or rfe_cv_flag==0):
+        tagDir=""
+    elif(rfe_cv_flag==1):
+        tagDir="RFECV.txt/"
+        
     #outfileHTML=open(model_type+".output.html",'a')
     if os.path.isfile(data_):
         if os.path.getsize(data_)!=0:
@@ -901,7 +906,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     #print "after label"; print label;
     
     if(mode!='predict' and mode!='validate'):
-        if(rfe_cv_flag==0):
+        if(rfe_cv_flag==0 or rfe_cv_flag==None):
             select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method)
         elif(rfe_cv_flag==1):
             select_data_var_list=dataframe_header; select_label_var_list=label_header
@@ -910,7 +915,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         #print label[select_label_var_list]
         #print "filtered dataframe"; print filtered_dataframe
         #print(select_data_var_list)
-        outfileHTML=open("/data/"+model_type+".output.html",'a')
+        outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
         outfileHTML.write("<h1 style=text-align:center>"+"----------------------------------Features with highly significant correlations-------------------------------------"+"</h1>"+"\n")
         dataframe = dataframe[select_data_var_list]
         outfileHTML.write("<h2>"+"Below is the list of "+data_type+" features"+"</h2>"+"\n")
@@ -965,7 +970,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             #model = pickle.loads(load_model)
             print(model.get_params)
 
-            outfileHTML=open("/data/"+model_type+".output.html",'a')
+            outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
             store_params=model.get_params();
             outfileHTML.write("<h2 style=text-align:center;color:blue>"+"------------------------Model Summary-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"Model Parameters:"+"</h3>"+"\n")
@@ -982,14 +987,14 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             Y_pred = predict(model, dataframe)
             if prediction_out == "NULL":
                prediction_out = "prediction_out.txt"
-            outfileH=open("/data/"+prediction_out,'w');
+            outfileH=open("/data/"+tagDir+prediction_out,'w');
 
             outfileHTML.write("<h3>"+"All predicted values for labels available in the file: "+prediction_out+"</h3>")
 
             if(label_header_for_predict):
                 outfileH.write("sampleID"+"\t"+"\t".join(label_header_for_predict)+"\n")
                 outfileH.close()
-                outfileH=open("/data/"+prediction_out,'a')
+                outfileH=open("/data/"+tagDir+prediction_out,'a')
             #outfileHTML.write("<h4>"+"Checking if No. of samples provided as input = No. of samples predicted"+"</h4>")
             if len(sampleIDs) != len(Y_pred):
                 outfileHTML.write("<h5 style=color:red>"+"No. of samples provided as input DO NOT MATCH WITH No. of samples predicted. Therefore, no prediction performed. Kindly investigate the log file for errors"+"</h5>")
@@ -1020,7 +1025,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             model = joblib.load(str(load_model))
             #model = pickle.loads(load_model)
             print(model.get_params)
-            outfileHTML=open("/data/"+model_type+".output.html",'a')
+            outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
             store_params=model.get_params();
             outfileHTML.write("<h2 style=text-align:center;color:blue>"+"------------------------Model Summary-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"Model Parameters:"+"</h3>"+"\n")
@@ -1148,7 +1153,9 @@ if __name__ == "__main__":
     else:
         print_param_grid = param_grid
     outfileHTML=open("/data/"+model_type+".output.html",'w')
+    outfileHTML2=open("/data/"+"RFECV.txt/+model_type+".output.html",'w')##Getting it ready for RFECV mode as well.
     outfileHTML.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report"+"</h1>"+"\n")
+    outfileHTML2.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report with RFECV mode activated"+"</h1>"+"\n")
     #write date and time of the report
     from datetime import datetime
     datetime_now = datetime.now()
@@ -1158,9 +1165,16 @@ if __name__ == "__main__":
     outfileHTML.write("<h3>"+"Mode:{}".format(mode)+"</h3>")
     outfileHTML.write("<h3>"+"Model:{}".format(model_type)+"</h3>")
     outfileHTML.write("<h3>"+"Params:{}".format(print_params)+"</h3>")
+    outfileHTML2.write("<h5 style=text-align:center;>"+datetime_string+"</h5>"+"\n")
+    outfileHTML2.write("<h2 style=text-align:center;color:brown>"+"----------------------------Model inputs-------------------------------"+"</h2>")
+    outfileHTML2.write("<h3>"+"Mode:{}".format(mode)+"</h3>")
+    outfileHTML2.write("<h3>"+"Model:{}".format(model_type)+"</h3>")
+    outfileHTML2.write("<h3>"+"Params:{}".format(print_params)+"</h3>")
     if grid_search == "True":
         outfileHTML.write("<h3>"+"Grid_Params:{}".format(print_param_grid)+"</h3>")
+        outfileHTML2.write("<h3>"+"Grid_Params:{}".format(print_param_grid)+"</h3>")
     outfileHTML.close()
+    outfileHTML2.close()
     
     ## CALLING THE PROCESS FUNCTION.
 
