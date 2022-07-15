@@ -421,11 +421,11 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 if gridsearch='True':
                     k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
                 else:
-                    k_fold_=cv_par ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
+                    k_fold_=int(cv_par) ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
                 rfecv = RFECV(
                     estimator=model,
                     step=1,
-                    cv=StratifiedKFold(2),
+                    cv=StratifiedKFold(k_fold_),
                     scoring=scoring_par,
                     min_features_to_select=1,
                 )
