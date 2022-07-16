@@ -418,7 +418,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             '''
             ##ADDING RFECV
             if(rfe_cv_flag==1):
-                if gridsearch='True':
+                if gridsearch=='True':
                     k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
                 else:
                     k_fold_=int(cv_par) ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
