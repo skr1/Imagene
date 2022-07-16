@@ -308,7 +308,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     return train , Y_train , test , Y_test
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
-def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, trainmodel, rfe_cv_flag):
+def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, trainmodel):
     '''
     initializing model and training the model
     '''
@@ -953,7 +953,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     if mode == 'Train':
         train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header)
         print("Staring Training of :{}".format(model_type))
-        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, trainmodel = 'True', rfe_cv_flag)
+        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, trainmodel = 'True')
         if save == 'True':
             try:
                 joblib.dump(model, str(save_dir) + str(model_type)+ ".pkl" )
