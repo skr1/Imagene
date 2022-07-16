@@ -1153,7 +1153,8 @@ if __name__ == "__main__":
     else:
         print_param_grid = param_grid
     outfileHTML=open("/data/"+model_type+".output.html",'w')
-    outfileHTML2=open("/data/"+"RFECV.txt/+model_type+".output.html",'w')##Getting it ready for RFECV mode as well.
+    os.mkdir("/data/"+"RFECV.txt/",exist_ok=True)## Making RFE_CV dir
+    outfileHTML2=open("/data/"+"RFECV.txt/"+model_type+".output.html",'w')##Getting it ready for RFECV mode as well.
     outfileHTML.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report"+"</h1>"+"\n")
     outfileHTML2.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report with RFECV mode activated"+"</h1>"+"\n")
     #write date and time of the report
