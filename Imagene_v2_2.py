@@ -793,7 +793,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         for u,k in enumerate(importance):
             FI_handle.write(str(Y_features[u])+","+str(k)+"\n")
     else:
-    	importance = model.feature_importances_
+        importance = model.feature_importances_
         FI_handle.write("Features, Score"+"\n")
         for u,k in enumerate(importance):
             FI_handle.write(str(X_features[u])+","+str(k)+"\n")
@@ -801,7 +801,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     
 
 
-    ##CALCULATE AUCs BASED on the devision thresholds list above.
+    ##CALCULATE AUCs BASED on the decision thresholds list above.
     AUC_fH=open("/data/"+tagDir+prefix+"_"+"AUC_values.txt",'w+')
     AUC_fH.write("label"+"\t"+"AUC_value"+"\t"+"decision_threshold"+"\n")
     label_resulted=[]
