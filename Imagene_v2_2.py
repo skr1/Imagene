@@ -72,7 +72,7 @@ from datetime import datetime
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import FloatVector
 ##Correlation function establishes correlations between gene and imaging features and calculates FDR adjusted pvalues further to establish statistical significance of those correlations.
-def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_threshold,pVal_adjust_method):
+def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_threshold,pVal_adjust_method, tagDir):
     pval=dict()
     pcorr=dict()
     Var1_list=[]; Var2_list=[]; spCorr_list=[]; pvalue_list=[]
@@ -200,7 +200,7 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
         d_array = dataframe.to_records(index='False')
         return d_array
 ##Preprocessing of datasets    
-def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True):
+def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkNA = True):
     #try:
         outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
         outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
@@ -257,7 +257,7 @@ def preprocessing(dataframe , label, data_type, label_type, mode, checkNA = True
         return dataframe , label, sampleIDs, label_header, dataframe_header
 
 ##Train-test split function    
-def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header):
+def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header, tagDir):
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
     ##Converting numpy arrays to dataframe to perform normalization on them
@@ -308,7 +308,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     return train , Y_train , test , Y_test
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
-def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, trainmodel):
+def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel):
     '''
     initializing model and training the model
     '''
@@ -476,19 +476,19 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             #print("MSE of Test set:{}".format(metrics.mean_squared_error(Y_test, Y_pred)))
 
             outfileHTML.close()
-            evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type)
-            returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type)
+            evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir)
+            returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir)
             ##Permut each label coulmn of the test dataset 100 times and validate the model
             for l in returned_label_resulted:
                 for n in range(1,21):
                     Y_test[[l]]=np.random.permutation(Y_test[[l]])
-                    evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type)
+                    evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type, tagDir)
         #except:
             #print(" Issue with model training")
         
     return model
 ##Evaluate the models for test or validation.
-def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type):
+def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type, tagDir):
     '''
     evalauting the model preformance 
     '''
@@ -901,7 +901,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         label='NA'
     #if(mode!='predict'):
     #    correlation(dataframe,label)
-    dataframe , label, sampleIDs, label_header, dataframe_header =  preprocessing(dataframe , label, data_type, label_type, mode)
+    dataframe , label, sampleIDs, label_header, dataframe_header =  preprocessing(dataframe , label, data_type, label_type, mode, tagDir)
     #print "after dataframe"; print dataframe;
     #print "after label"; print label;
     
@@ -951,9 +951,9 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             select_label_var_list_for_validate=label_header
 
     if mode == 'Train':
-        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header)
+        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header, tagDir)
         print("Staring Training of :{}".format(model_type))
-        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, trainmodel = 'True')
+        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel = 'True')
         if save == 'True':
             try:
                 joblib.dump(model, str(save_dir) + str(model_type)+ ".pkl" )
