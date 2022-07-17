@@ -171,8 +171,8 @@ def read_dataset(dataset):
 def normal_dataframe(dataframe, norm_type, header, normalize = True):
     if normalize:
         if norm_type =='min_max':
-            min_max_scaler = MinMaxScaler()
-            dataframe_scaled = min_max_scaler.fit_transform(dataframe)
+            scaler = MinMaxScaler()
+            dataframe_scaled = scaler.fit_transform(dataframe)
             #return dataframe_scaled
         
         elif norm_type == 'Stand_scaler':
@@ -180,25 +180,29 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
             dataframe_scaled = scaler.fit_transform(dataframe)
             #return dataframe_scaled
         
-        elif norm_type == 'zscore':
-            dataframe_scaled = stats.zscore(dataframe)
-            #return dataframe_scaled
+        ##Removing Zscore as it is redundant to StandScaler
+        #elif norm_type == 'zscore':
+        #    dataframe_scaled = stats.zscore(dataframe)
+        #    #return dataframe_scaled
         
         elif norm_type == 'MaxAbsScaler':
-            max_abs_scaler = MaxAbsScaler()
-            dataframe_scaled = max_abs_scaler.fit_transform(dataframe)
+            scaler = MaxAbsScaler()
+            dataframe_scaled = scaler.fit_transform(dataframe)
             #return dataframe_scaled
         else:
             print("Invalid normalization type/method detected. Skipping normalization. If you wish to normalize this dataset, then correct the normalization_method in the config file and rerun. Proceeding with no normalization")
             ## The dataframe needs to be converted to numpy to be consistent with the return value when normalization method is detected and normalization actually happens.
-            d_array = dataframe.to_records(index='False')
-            return d_array
+            d_array = dataframe.to_records(index='True')
+            feature_array = d_array.indices()
+            return d_array, feature_array
         ##SILENTING conversion of numpy into dataframe as we do want to return numpy array now that the calling of normal_dataframe occurs outside the preprocessing function.
         #dataframe_scaled=pd.DataFrame(data=dataframe_scaled,columns=header)
-        return dataframe_scaled
+        feature_array=scaler.feature_names_in_
+        return dataframe_scaled, feature_array
     else:
-        d_array = dataframe.to_records(index='False')
-        return d_array
+        d_array = dataframe.to_records(index='True')
+        feature_array = d_array.indices()
+        return d_array, feature_array
 ##Preprocessing of datasets    
 def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkNA = True):
     #try:
@@ -272,19 +276,22 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
         
         ##NORMALIZING TRAIN data
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TRAIN set"+"</h3>"+"\n")
-        train = normal_dataframe(train, data_normalize_method, dataframe_header)
-        train=train[:, ~np.isnan(train).any(axis=0)]
-        #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
+        train, train_features = normal_dataframe(train, data_normalize_method, dataframe_header)
+        ##Convert to dataframe with indices
+        train_df = pd.DataFrame(train, index = train_features)
+        #train=train[:, ~np.isnan(train).any(axis=0)]
+        train_df= train_df.loc[:, (train_df!=0).any(axis=0)]; nan_value = float("NaN"); train_df.replace("", nan_value, inplace=True); train_df=train_df.dropna()
         print("Printing Normalized Train data:")
-        print(train)
+        print(train_df)
 
         ##NORMALIZING TEST set
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TEST set"+"</h3>"+"\n")
-        test = normal_dataframe(test, data_normalize_method, dataframe_header)
-        test=test[:, ~np.isnan(test).any(axis=0)]
-        #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
+        test, test_features = normal_dataframe(test, data_normalize_method, dataframe_header)
+        test_df = pd.DataFrame(test, index = test_features)
+        #test=test[:, ~np.isnan(test).any(axis=0)]
+        test_df= test_df.loc[:, (test_df!=0).any(axis=0)]; nan_value = float("NaN"); test_df.replace("", nan_value, inplace=True); test_df=test_df.dropna()
         print("Printing Normalized Test data:")
-        print(test)
+        print(test_df)
 
     if isinstance(label,pd.DataFrame):
         if label_normalize_method != 'none':
@@ -292,19 +299,21 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             
             ##NORMALIZING TRAINING label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
-            Y_train = normal_dataframe(Y_train, label_normalize_method, label_header)
-            Y_train=Y_train[:, ~np.isnan(Y_train).any(axis=0)]
-            #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
+            Y_train, Y_train_features = normal_dataframe(Y_train, label_normalize_method, label_header)
+            Y_train_df = pd.DataFrame(Y_train, index = Y_train_features)
+            #Y_train=Y_train[:, ~np.isnan(Y_train).any(axis=0)]
+            Y_train_df= Y_train_df.loc[:, (Y_train_df!=0).any(axis=0)]; nan_value = float("NaN"); Y_train_df.replace("", nan_value, inplace=True); Y_train_df=Y_train_df.dropna()
             print("Printing Normalized Train label:")
-            print(Y_train)
+            print(Y_train_df)
 
             ##NORMALIZING TEST label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
-            Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
-            Y_test=Y_test[:, ~np.isnan(Y_test).any(axis=0)]
-            #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
+            Y_test, Y_test_features = normal_dataframe(Y_test, label_normalize_method, label_header)
+            Y_test_df = pd.DataFrame(Y_test, index = Y_test_features)
+            #Y_test=Y_test[:, ~np.isnan(Y_test).any(axis=0)]
+            Y_test_df= Y_test_df.loc[:, (Y_test_df!=0).any(axis=0)]; nan_value = float("NaN"); Y_test_df.replace("", nan_value, inplace=True); Y_test_df=Y_test_df.dropna()
             print("Printing Normalized Test label:")
-            print(Y_test)
+            print(Y_test_df)
     
     outfileHTML.write("<h1 style=text-align:center;color:purple>"+"-------------------------------Number of Samples for Training and Testing---------------------------------"+"</h1>"+"\n")
     outfileHTML.write("<h3>"+"No. of samples for training:{}".format(len(train))+"</h3>"+"\n")
@@ -313,7 +322,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     print("Trainig data:{} , Testing data:{} ".format(len(train) ,len(test)))
     #if mode_=="validate":
     #    print("Custom test data:{} ".format(len(test)))
-    return train , Y_train , test , Y_test
+    return train_df , Y_train_df , test_df , Y_test_df
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
 def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel):
