@@ -273,14 +273,16 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
         ##NORMALIZING TRAIN data
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TRAIN set"+"</h3>"+"\n")
         train = normal_dataframe(train, data_normalize_method, dataframe_header)
-        train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
+        train = train[~np.isnan(train)]
+        #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
         print("Printing Normalized Train data:")
         print(train)
 
         ##NORMALIZING TEST set
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TEST set"+"</h3>"+"\n")
         test = normal_dataframe(test, data_normalize_method, dataframe_header)
-        test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
+        test = test[~np.isnan(test)]
+        #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
         print("Printing Normalized Test data:")
         print(test)
 
@@ -291,14 +293,16 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             ##NORMALIZING TRAINING label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
             Y_train = normal_dataframe(Y_train, label_normalize_method, label_header)
-            Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
+            Y_train = Y_train[~np.isnan(Y_train)]
+            #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
             print("Printing Normalized Train label:")
             print(Y_train)
 
             ##NORMALIZING TEST label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
             Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
-            Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
+            Y_test = Y_test[~np.isnan(Y_test)]
+            #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
             print("Printing Normalized Test label:")
             print(Y_test)
     
