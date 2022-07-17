@@ -907,7 +907,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     
     if(mode!='predict' and mode!='validate'):
         if(rfe_cv_flag==0 or rfe_cv_flag==None):
-            select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method)
+            select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method, tagDir)
         elif(rfe_cv_flag==1):
             select_data_var_list=dataframe_header; select_label_var_list=label_header
         print select_label_var_list
