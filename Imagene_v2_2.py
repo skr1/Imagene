@@ -258,12 +258,12 @@ def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkN
         #c_=pd.concat([dataframe1, dataframe2], axis=1)
         print(dataframe)
         #dataframe = dataframe.loc[:, (dataframe!=0).any(axis=0)]; nan_value = float("NaN"); dataframe.replace("", nan_value, inplace=True); dataframe=dataframe.dropna()
-        dataframe_header=list(dataframe.keys())
+        #dataframe_header=list(dataframe.keys())
         print(dataframe.shape[1])
         if isinstance(label,pd.DataFrame):
             #label = label.loc[:, (label!=0).any(axis=0)]; label.replace("", nan_value, inplace=True); label=label.dropna()
             print(label)
-            label_header=list(label.keys())
+            #label_header=list(label.keys())
             print(label.shape[1])
         return dataframe , label, sampleIDs, label_header, dataframe_header
 
