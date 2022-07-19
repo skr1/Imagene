@@ -987,7 +987,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             select_label_var_list_for_validate=label_header
 
     if mode == 'Train':
-        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header, tagDir)
+        train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, select_data_var_list, select_label_var_list, tagDir)
         print("Staring Training of :{}".format(model_type))
         model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel = 'True')
         if save == 'True':
