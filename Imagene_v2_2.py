@@ -273,15 +273,19 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
     ##Converting numpy arrays to dataframe to perform normalization on them
     train=pd.DataFrame(data=train,columns=dataframe_header)
+    print(train)
     #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
     
     test=pd.DataFrame(data=test,columns=dataframe_header)
+    print(test)
     #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
     
     Y_train=pd.DataFrame(data=Y_train,columns=label_header)
+    print(Y_train)
     #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
     
     Y_test=pd.DataFrame(data=Y_test,columns=label_header)
+    print(Y_test)
     #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
     #if mode_=="Train":
     ##Introducing normalizations for TRAIN and TEST datasets.
@@ -294,7 +298,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
         ##Convert to dataframe with indices
         #train_df = pd.DataFrame(train, index = train_features)
         #train=train[:, ~np.isnan(train).any(axis=0)]
-        train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
+        #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
         print("Printing Normalized Train data:")
         print(train)
 
@@ -303,7 +307,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
         test= normal_dataframe(test, data_normalize_method, dataframe_header)
         #test_df = pd.DataFrame(test, index = test_features)
         #test=test[:, ~np.isnan(test).any(axis=0)]
-        test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
+        #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
         print("Printing Normalized Test data:")
         print(test)
 
@@ -316,7 +320,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             Y_train = normal_dataframe(Y_train, label_normalize_method, label_header)
             #Y_train_df = pd.DataFrame(Y_train, index = Y_train_features)
             #Y_train=Y_train[:, ~np.isnan(Y_train).any(axis=0)]
-            Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
+            #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
             print("Printing Normalized Train label:")
             print(Y_train)
 
@@ -325,7 +329,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
             #Y_test_df = pd.DataFrame(Y_test, index = Y_test_features)
             #Y_test=Y_test[:, ~np.isnan(Y_test).any(axis=0)]
-            Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
+            #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
             print("Printing Normalized Test label:")
             print(Y_test)
     
