@@ -29,6 +29,7 @@ import configparser
 import ast
 import argparse
 from sklearn.feature_selection import RFECV
+from sklearn.model_selection import StratifiedKFold
 from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import MinMaxScaler
