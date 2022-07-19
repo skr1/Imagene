@@ -28,8 +28,9 @@ import pickle
 import configparser
 import ast
 import argparse
-from sklearn.feature_selection import RFECV
-from sklearn.model_selection import StratifiedKFold
+from sklearn.feature_selection import SelectFromModel
+#from sklearn.feature_selection import RFECV
+#from sklearn.model_selection import StratifiedKFold
 from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import MinMaxScaler
@@ -452,38 +453,42 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             '''
             performing training
             '''
-            ##ADDING RFECV
+            ##SILENTING RFECV
+            #if(rfe_cv_flag==1):
+            #    if gridsearch=='True':
+            #        k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
+            #    else:
+            #        k_fold_=int(cv_par) ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
+            #    rfecv = RFECV(
+            #        estimator=model,
+            #        step=1,
+            #        cv=StratifiedKFold(k_fold_),
+            #        scoring=scoring_par,
+            #        min_features_to_select=1,
+            #    )
+            #    rfecv.fit(train, Y_train)
+            #    print("Optimal number of features : %d" % rfecv.n_features_)
+            #    mp.figure()
+            #    mp.xlabel("Number of features selected")
+            #    mp.ylabel("Cross validation score (accuracy)")
+            #    mp.plot(
+            #        range(min_features_to_select, len(rfecv.grid_scores_) + min_features_to_select),
+            #        rfecv.grid_scores_,
+            #    )
+            #    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
+            #    mp.clf()
+            #    outfileHTML.write("<h3>"+heading+"Automatic tuning of the number of features selected with cross-validation using RFECV"+"</h3>"+"\n")
+            #    data_image_rfecv = open("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
+            #    img_tag_rfecv = '<img src="data:image/png;base64,{0}">'.format(data_image_rfecv)
+            #    outfileHTML.write(img_tag_rfecv+"\n")
+
+            #    ##Transforming Train to selected features only
+            #    train=rfecv.transform(train)
+            ## ADDING SelectFromModel (change rfe_cv_flag to sfm_flag later)
             if(rfe_cv_flag==1):
-                if gridsearch=='True':
-                    k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
-                else:
-                    k_fold_=int(cv_par) ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
-                rfecv = RFECV(
-                    estimator=model,
-                    step=1,
-                    cv=StratifiedKFold(k_fold_),
-                    scoring=scoring_par,
-                    min_features_to_select=1,
-                )
-                rfecv.fit(train, Y_train)
-                print("Optimal number of features : %d" % rfecv.n_features_)
-                mp.figure()
-                mp.xlabel("Number of features selected")
-                mp.ylabel("Cross validation score (accuracy)")
-                mp.plot(
-                    range(min_features_to_select, len(rfecv.grid_scores_) + min_features_to_select),
-                    rfecv.grid_scores_,
-                )
-                mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
-                mp.clf()
-                outfileHTML.write("<h3>"+heading+"Automatic tuning of the number of features selected with cross-validation using RFECV"+"</h3>"+"\n")
-                data_image_rfecv = open("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
-                img_tag_rfecv = '<img src="data:image/png;base64,{0}">'.format(data_image_rfecv)
-                outfileHTML.write(img_tag_rfecv+"\n")
-
-                ##Transforming Train to selected features only
-                train=rfecv.transform(train)
-
+                selector = SelectFromModel(estimator=model).fit(train, Y_train)
+                train=selector.transform(train)
+            
             #outfileHTML=open(model_type+".output.html",'a')
             #outfileHTML.write("<h1>"+"--------------------------Model Summary-----------------------"+"</h1>"+"\n")
             outfileHTML.write("<h3>"+"Model Type : "+method+"</h3>"+"\n")
