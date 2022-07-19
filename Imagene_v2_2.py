@@ -959,6 +959,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         #print(list(dataframe.keys()))
         label = label[select_label_var_list]
         print label
+        print dataframe
 
         outfileHTML.write("<h2>"+"Below is the list of "+label_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h5>"+str(list(label.keys()))+"</h5>"+"\n")
