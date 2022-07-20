@@ -457,23 +457,26 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             if(rfe_cv_flag==1):
                 column_headers__=train.columns
                 selector = SelectFromModel(estimator=model).fit(train, Y_train)
-                train=selector.transform(train)##The output is numpy array without headers.
+                ##Skipping the transform as it yields numpy array. Rather getting an array of features with "True or False" for selection. Extracting headers and then selecting only those features from train and test dataframes below.
+                #train=selector.transform(train)##The output is numpy array without headers.
                 ##Get an array of "True or False" for features. True means selected, False means not-selected. Selection happens through feature importances yield by the model using SelectFromModel function above.
                 feature_selected_or_not_=selector.get_support()
                 ##Make a dataframe of that array which has the header as names of each feature.
-                fsd=pd.DataFrame(data=feature_selected_or_not_,columns=column_headers)
+                fsd=pd.DataFrame(data=feature_selected_or_not_,columns=column_headers__)
                 print(fsd)
                 ##Drop the features that are "False", i.e. not selected.
                 fsd=fsd.drop(columns=fsd.columns[(fsd == 'False').any()])
                 print("These are the features selected by SelectFromModel function")
                 print(fsd)
-                ##Converting numpy array to dataframe with headers.
-                train=pd.DataFrame(data=train,columns=column_headers__)
+                feature_headers__=fsd.columns()
+                ##Converting numpy array to dataframe with headers for selected features.
+                #train=pd.DataFrame(data=train,columns=feature_headers__)##no need to generate dataframe from numpy array anymore
+                test=train.loc[:, feature_headers__]
                 print("This is the train set post feature selection")
                 print(train)
                 ##Selecting same features in test as well.
                 print("This is the test set post feature selection")
-                test=test.loc[:, column_headers__]
+                test=test.loc[:, feature_headers__]
                 print(test)
             
             #outfileHTML=open(model_type+".output.html",'a')
