@@ -461,7 +461,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 ##Get an array of "True or False" for features. True means selected, False means not-selected. Selection happens through feature importances yield by the model using SelectFromModel function above.
                 feature_selected_or_not_=selector.get_support()
                 ##Make a dataframe of that array which has the header as names of each feature.
-                fsd=pd.DataFrame(data=feature_selected_or_not,columns=column_headers)
+                fsd=pd.DataFrame(data=feature_selected_or_not_,columns=column_headers)
                 print(fsd)
                 ##Drop the features that are "False", i.e. not selected.
                 fsd=fsd.drop(columns=fsd.columns[(fsd == 'False').any()])
