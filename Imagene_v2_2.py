@@ -345,7 +345,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     return train , Y_train , test , Y_test
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
-def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel):
+def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel):
     '''
     initializing model and training the model
     '''
@@ -453,41 +453,28 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             '''
             performing training
             '''
-            ##SILENTING RFECV
-            #if(rfe_cv_flag==1):
-            #    if gridsearch=='True':
-            #        k_fold_=2 ##Setting to default 2 for RFECV performed prior to gridsearch, as for gridsearch there is no cv assigned.
-            #    else:
-            #        k_fold_=int(cv_par) ##Setting to cv_par (user selected kfold value for cv) when gridsearch is chosen False.
-            #    rfecv = RFECV(
-            #        estimator=model,
-            #        step=1,
-            #        cv=StratifiedKFold(k_fold_),
-            #        scoring=scoring_par,
-            #        min_features_to_select=1,
-            #    )
-            #    rfecv.fit(train, Y_train)
-            #    print("Optimal number of features : %d" % rfecv.n_features_)
-            #    mp.figure()
-            #    mp.xlabel("Number of features selected")
-            #    mp.ylabel("Cross validation score (accuracy)")
-            #    mp.plot(
-            #        range(min_features_to_select, len(rfecv.grid_scores_) + min_features_to_select),
-            #        rfecv.grid_scores_,
-            #    )
-            #    mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png',bbox_inches='tight')
-            #    mp.clf()
-            #    outfileHTML.write("<h3>"+heading+"Automatic tuning of the number of features selected with cross-validation using RFECV"+"</h3>"+"\n")
-            #    data_image_rfecv = open("/data/"+tagDir+prefix+'_'+model_type+'_RFECV.png', 'rb').read().encode('base64').replace('\n', '')
-            #    img_tag_rfecv = '<img src="data:image/png;base64,{0}">'.format(data_image_rfecv)
-            #    outfileHTML.write(img_tag_rfecv+"\n")
-
-            #    ##Transforming Train to selected features only
-            #    train=rfecv.transform(train)
-            ## ADDING SelectFromModel (change rfe_cv_flag to sfm_flag later)
+            ## ADDING SelectFromModel for Feature Selection using model and using only those features for training and testing further (change rfe_cv_flag to sfm_flag later)
             if(rfe_cv_flag==1):
+                column_headers__=train.columns
                 selector = SelectFromModel(estimator=model).fit(train, Y_train)
-                train=selector.transform(train)
+                train=selector.transform(train)##The output is numpy array without headers.
+                ##Get an array of "True or False" for features. True means selected, False means not-selected. Selection happens through feature importances yield by the model using SelectFromModel function above.
+                feature_selected_or_not_=selector.get_support()
+                ##Make a dataframe of that array which has the header as names of each feature.
+                fsd=pd.DataFrame(data=feature_selected_or_not,columns=column_headers)
+                print(fsd)
+                ##Drop the features that are "False", i.e. not selected.
+                fsd=fsd.drop(columns=fsd.columns[(fsd == 'False').any()])
+                print("These are the features selected by SelectFromModel function")
+                print(fsd)
+                ##Converting numpy array to dataframe with headers.
+                train=pd.DataFrame(data=train,columns=column_headers__)
+                print("This is the train set post feature selection")
+                print(train)
+                ##Selecting same features in test as well.
+                print("This is the test set post feature selection")
+                test=test.loc[:, column_headers__]
+                print(test)
             
             #outfileHTML=open(model_type+".output.html",'a')
             #outfileHTML.write("<h1>"+"--------------------------Model Summary-----------------------"+"</h1>"+"\n")
@@ -995,7 +982,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     if mode == 'Train':
         train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, select_data_var_list, select_label_var_list, tagDir)
         print("Staring Training of :{}".format(model_type))
-        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel = 'True')
+        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel = 'True')
         if save == 'True':
             try:
                 joblib.dump(model, str(save_dir) + str(model_type)+ ".pkl" )
