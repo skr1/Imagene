@@ -510,6 +510,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
 
             outfileHTML.close()
             evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir)
+            print(Y_test)
             returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir)
             ##Permut each label coulmn of the test dataset 100 times and validate the model
             for l in returned_label_resulted:
@@ -527,6 +528,8 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     '''
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     Y_pred = model.predict(test)
+    print(Y_test)
+    print(Y_pred)
 
     if(prefix=="train_eval"):
         heading="Model evaluation for Train data"
