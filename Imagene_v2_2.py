@@ -470,7 +470,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 fsd=fsd.drop(columns=fsd.columns[(fsd == 'False').any()])
                 print("These are the features selected by SelectFromModel function")
                 print(fsd)
-                feature_headers__=fsd.columns()
+                feature_headers__=fsd.columns
                 ##Converting numpy array to dataframe with headers for selected features.
                 #train=pd.DataFrame(data=train,columns=feature_headers__)##no need to generate dataframe from numpy array anymore
                 test=train.loc[:, feature_headers__]
