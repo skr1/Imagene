@@ -473,12 +473,12 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 feature_headers__=fsd.columns
                 ##Converting numpy array to dataframe with headers for selected features.
                 #train=pd.DataFrame(data=train,columns=feature_headers__)##no need to generate dataframe from numpy array anymore
-                test=train.loc[:, feature_headers__]
+                test=train[feature_headers__]
                 print("This is the train set post feature selection")
                 print(train)
                 ##Selecting same features in test as well.
                 print("This is the test set post feature selection")
-                test=test.loc[:, feature_headers__]
+                test=test[feature_headers__]
                 print(test)
             
             #outfileHTML=open(model_type+".output.html",'a')
