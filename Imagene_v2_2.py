@@ -327,7 +327,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             print(Y_train)
 
             ##NORMALIZING TEST label
-            outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
+            outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TEST set"+"</h3>"+"\n")
             Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
             #Y_test_df = pd.DataFrame(Y_test, index = Y_test_features)
             #Y_test=Y_test[:, ~np.isnan(Y_test).any(axis=0)]
