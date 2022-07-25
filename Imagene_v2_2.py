@@ -29,8 +29,6 @@ import configparser
 import ast
 import argparse
 from sklearn.feature_selection import SelectFromModel
-#from sklearn.feature_selection import RFECV
-#from sklearn.model_selection import StratifiedKFold
 from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import MinMaxScaler
@@ -345,7 +343,7 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     return train , Y_train , test , Y_test
 
 ##Build models, multiple options of modeltypes accepted from user per the method list below
-def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel):
+def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, featureSelFrmModel_flag, tagDir, trainmodel):
     '''
     initializing model and training the model
     '''
@@ -453,8 +451,8 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
             '''
             performing training
             '''
-            ## ADDING SelectFromModel for Feature Selection using model and using only those features for training and testing further (change rfe_cv_flag to sfm_flag later)
-            if(rfe_cv_flag==1):
+            ## ADDING SelectFromModel for Feature Selection using model and using only those features for training and testing further (change featureSelFrmModel_flag to sfm_flag later)
+            if(featureSelFrmModel_flag==1):
                 column_headers__=train.columns
                 selector = SelectFromModel(estimator=model).fit(train, Y_train)
                 ##Skipping the transform as it yields numpy array. Rather getting an array of features with "True or False" for selection. Extracting headers and then selecting only those features from train and test dataframes below.
@@ -908,11 +906,11 @@ def predict(model , test):
     Y_pred = model.predict(test)
     return Y_pred
 ##Defining the entire process starting from training through testing and validation per the modes of operation specified by user.       
-def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=None):
-    if(rfe_cv_flag==None or rfe_cv_flag==0):
+def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=None):
+    if(featureSelFrmModel_flag==None or featureSelFrmModel_flag==0):
         tagDir=""
-    elif(rfe_cv_flag==1):
-        tagDir="RFECV.txt/"
+    elif(featureSelFrmModel_flag==1):
+        tagDir="FeaturesSelFrmModel.txt/"
         
     #outfileHTML=open(model_type+".output.html",'a')
     if os.path.isfile(data_):
@@ -942,9 +940,9 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     #print "after label"; print label;
     
     if(mode!='predict' and mode!='validate'):
-        if(rfe_cv_flag==0 or rfe_cv_flag==None):
+        if(featureSelFrmModel_flag==0 or featureSelFrmModel_flag==None):
             select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method, tagDir)
-        elif(rfe_cv_flag==1):
+        elif(featureSelFrmModel_flag==1):
             select_data_var_list=dataframe_header; select_label_var_list=label_header
         print select_label_var_list
         #print label
@@ -990,11 +988,11 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     if mode == 'Train':
         train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, select_data_var_list, select_label_var_list, tagDir)
         print("Staring Training of :{}".format(model_type))
-        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, rfe_cv_flag, tagDir, trainmodel = 'True')
+        model = BuildModel(train , Y_train , test , Y_test , model_type, params, cv_par, scoring_par, grid_search, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, featureSelFrmModel_flag, tagDir, trainmodel = 'True')
         if save == 'True':
             try:
-                joblib.dump(model, str(save_dir) + str(model_type)+ ".pkl" )
-                print("Model saved at:{}".format(str(save_dir) + str(model_type)+ ".pkl"))
+                joblib.dump(model, str(save_dir) + str(tagDir) + str(model_type)+ ".pkl" )
+                print("Model saved at:{}".format(str(save_dir) + str(tagDir) + str(model_type)+ ".pkl"))
             except OSError:
                 print("Saving model failed")
         else:
@@ -1190,12 +1188,12 @@ if __name__ == "__main__":
     else:
         print_param_grid = param_grid
     outfileHTML=open("/data/"+model_type+".output.html",'w')
-    RFECV_dir_path="/data/"+"RFECV.txt/"
-    if not os.path.exists(RFECV_dir_path):
-        os.makedirs(RFECV_dir_path)## Making RFE_CV dir
-    outfileHTML2=open("/data/"+"RFECV.txt/"+model_type+".output.html",'w')##Getting it ready for RFECV mode as well.
+    FeaturesSelFrmModel_dir_path="/data/"+"FeaturesSelFrmModel.txt/"
+    if not os.path.exists(FeaturesSelFrmModel_dir_path):
+        os.makedirs(FeaturesSelFrmModel_dir_path)## Making FeaturesSelFrmModel dir
+    outfileHTML2=open("/data/"+"FeaturesSelFrmModel.txt/"+model_type+".output.html",'w')##Getting it ready for FeatureSelFrmModel mode as well.
     outfileHTML.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report"+"</h1>"+"\n")
-    outfileHTML2.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report with RFECV mode activated"+"</h1>"+"\n")
+    outfileHTML2.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report with Features_Selection_From_Model mode activated"+"</h1>"+"\n")
     #write date and time of the report
     from datetime import datetime
     datetime_now = datetime.now()
@@ -1219,6 +1217,6 @@ if __name__ == "__main__":
     ## CALLING THE PROCESS FUNCTION.
 
 
-    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=0)
-    ##Calling process again with feature selection flag (rfe_cv_flag) equal to 1, so that the feature selection performed using RFECV (Recursive Feature Elimination with Cross Validation), and correlation module is skipped completely.
-    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, rfe_cv_flag=1)
+    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=0)
+    ##Calling process again with feature selection flag (featureSelFrmModel_flag) equal to 1, so that the feature selection performed using SelectFromModel module (i.e., Feature Selection using Feature Importances from model), and the correlation module is skipped completely.
+    process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=1)
