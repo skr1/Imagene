@@ -466,7 +466,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 print(fsd)
                 ##Drop the features that are "False", i.e. not selected.
                 #fsd=fsd.drop(columns=fsd.columns[(fsd == 'False').any()])
-                filter = (df == "True").any()
+                filter = (fsd == "True").any()
                 fsd = fsd.loc[: , filter]
                 print("These are the features selected by SelectFromModel function")
                 print(fsd)
