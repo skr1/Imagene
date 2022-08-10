@@ -1069,7 +1069,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
                 outfileHTML.write("<h4>"+str(i)+":"+str(store_params[i])+"</h4>")
             outfileHTML.write("<h2 style=text-align:center;color:green>"+"------------------------Samples for Validation-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"No. of samples used for validation: "+str(len(sampleIDs))+"</h3>")
-            outfileHTML.close()
+            #outfileHTML.close()
             #for i in label_header:
             #dataframe = dataframe.loc[:, (dataframe<=0).any(axis=0)]
             
@@ -1080,6 +1080,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             ##Normalizing label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" normalization for "+label_type+" features"+"</h3>"+"\n")
             label = normal_dataframe(label, label_normalize_method, label_header)
+            outfileHTML.close()
             
             ##Evaluate
             evaluate(model, dataframe , label, select_label_var_list_for_validate, 'validation', model_type, data_type, label_type)
