@@ -1092,7 +1092,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             outfileHTML.close()
             
             ##Evaluate
-            evaluate(model, dataframe , label, select_label_var_list_for_validate, 'validation', model_type, data_type, label_type)
+            evaluate(model, dataframe , label, select_label_var_list_for_validate, 'validation', model_type, data_type, label_type, tagDir)
         except IOError:
             print("Probably saved model file is not provided/check path")
     else:
