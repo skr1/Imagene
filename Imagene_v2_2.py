@@ -1018,7 +1018,10 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
 
             ##Normalizing data
             outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for prediction set"+"</h3>"+"\n")
-            dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
+            if(len(select_data_headers_for_predict)!=0):
+                dataframe = normal_dataframe(dataframe, data_normalize_method, select_data_headers_for_predict)
+            else:
+                dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
 
             Y_pred = predict(model, dataframe)
             if prediction_out == "NULL":
@@ -1075,11 +1078,17 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             
             ##Normalizing data
             outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
-            dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
+            if(len(select_data_headers_for_predict)!=0):
+                dataframe = normal_dataframe(dataframe, data_normalize_method, select_data_headers_for_predict)
+            else:
+                dataframe = normal_dataframe(dataframe, data_normalize_method, dataframe_header)
 
             ##Normalizing label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" normalization for "+label_type+" features"+"</h3>"+"\n")
-            label = normal_dataframe(label, label_normalize_method, label_header)
+            if(len(select_label_var_list_for_validate)!=0):
+                label = normal_dataframe(label, label_normalize_method, select_label_var_list_for_validate)
+            else:
+                label = normal_dataframe(label, label_normalize_method, label_header)
             outfileHTML.close()
             
             ##Evaluate
