@@ -9,8 +9,6 @@ ImaGene comprises of four modules: a) data pre-processing, b) correlation Analys
 1. Please do not leave spaces in the input file names: Example: "Supplementary Table BC Gene FPKM.csv". Kindly include either underscores or dashes in the names for the software to identify the files appropriately.
 2. 'ID' column is the first column in the input file. It could be any characters or numbers as far as it distinguishes the samples from each other. 'ID' column is required in both the input files, i.e. "data" and "labels". Please make sure the order of the IDs are consistent between two files. Also, both files should have equal number of IDs in place. Otherwise, Software would yield error.
 
-ImaGene comprises of four modules: a) data pre-processing, b) correlation Analysis, c) machine learning (ML), and d) reporting (Figure 1). The code for the software has been written in Python, and it utilizes several libraries such as scikit-learn (Pedregosa et al. 2011), matplotlib, seaborn and importr along with custom functions written to follow a systematic approach to analyze and pin point meaningful associations between imaging and omics features.
-
 # Silenting Correlations Threshold based filtering:
 
 In case users wish to not filter correlations based on a correlation threshold, they could silent such filtration by setting the value of Correlation Threshold parameter to '-1'. Currently, the default value for that parameter is set to '0.5'.
