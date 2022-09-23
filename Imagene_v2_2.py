@@ -435,21 +435,11 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     #Converting numpy.ndarray to dataframes
     column_dict_Y_test=dict()
     column_dict_Y_predict=dict()
-    #for i in label_header:
-    #    column_dict_Y_test.update({i: Y_test[:, label_header.index(i)]})
-    #    column_dict_Y_predict.update({i: Y_predict[:, label_header.index(i)]})
-    #Y_test_df=pd.DataFrame(column_dict_Y_test)
-    #Y_pred_df=pd.DataFrame(column_dict_Y_predict)
     Y_test_df = pd.DataFrame(data=Y_test, columns=select_label_var_list)
-    #print Y_test_df
     Y_pred_df = pd.DataFrame(data=Y_pred, columns=select_label_var_list)
-    #print Y_pred_df
 
 
     ##CALCULATE the RATIO of RMSE to Orignal Stdev for each label-feature
-
-
-
     ratio_low_dict=dict()
     ratio_high_dict=dict()
     ratio_dict=dict()
@@ -464,9 +454,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     for i in select_label_var_list:
         Y_test_c=pd.DataFrame.to_numpy(Y_test_df[[i]])
         Y_pred_c=pd.DataFrame.to_numpy(Y_pred_df[[i]])
-        #if(i=='module1'):
-        #    print Y_test_c
-        #    print Y_pred_c
         rmse=sqrt(metrics.mean_squared_error(Y_test_c, Y_pred_c))
         r2score=r2_score(Y_test_c, Y_pred_c)
         mean=np.mean(Y_test_c)
@@ -484,8 +471,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
                     ratio="NA"
         else:
             ratio=abs(rmse)/abs(stdev)
-        #print i+"\t"+str(mean)
-        #rmse_n_mean_df.update()
         mean_dict.update({i:mean})
         rmse_dict.update({i:rmse})
         r2_score_dict.update({i:r2score})
@@ -496,22 +481,15 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
             ratio_low_dict.update({i:ratio})
         elif(ratio > 1.0):
             ratio_high_dict.update({i:ratio})
-            #ratio_dict.update({i:ratio})
-            #mean_for_rmse_high_dict.update({i:mean})
-            #print("HIGH RMSE for "+i+" :{}".format(rmse))
-            #mse_high_file.write("HIGH MSE for "+i+" :{}".format(mse))
-            #mse_high_file.write("\n")
         ratio_dict.update({i:ratio})
     label_header_low_ratio=list(ratio_low_dict.keys())
 
 
     mean_header=list(mean_dict.keys())
     mean_df=pd.DataFrame.from_dict(mean_dict,orient='index',columns=['Observed Mean'])
-    #mean_df.to_csv(prefix+"_"+model_type+"_mean.csv")
     
     std_header=list(std_dict.keys())
     std_df=pd.DataFrame.from_dict(std_dict,orient='index',columns=['Observed Stdev'])
-    #std_df.to_csv(prefix+"_"+model_type+"_std.csv")
 
     rmse_header=list(rmse_dict.keys())
     rmse_df=pd.DataFrame.from_dict(rmse_dict,orient='index',columns=['RMSE between observed and predicted values'])
@@ -521,10 +499,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
 
     r2_score_header=list(r2_score_dict.keys())
     r2_score_df=pd.DataFrame.from_dict(r2_score_dict,orient='index',columns=['r2_score'])
-    #rmse_df.to_csv(prefix+"_"+model_type+"_rmse.csv")
-    
-    #print rmse_header
-    #print mean_header
 
     rmse_n_mean_df = rmse_df.merge(mean_df, how='outer', left_index=True, right_index=True)
     rmse_n_mean_n_std_df = rmse_n_mean_df.merge(std_df,how='outer', left_index=True, right_index=True)
@@ -533,25 +507,14 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     
     count=0
     Only_ratio_n_mean_df=rmse_n_mean_n_std_n_ratio_df[["Observed Mean","Ratio_of_RMSE_and_Stdev"]]
-    #Only_ratio_n_mean_df.plot.scatter("Observed Mean","Ratio_of_RMSE_and_Stdev")
     Only_ratio_n_mean_df.plot.bar()
-    #for e in list(rmse_n_mean_n_std_n_ratio_df.index.values):
-    #    mp.scatter(rmse_n_mean_n_std_n_ratio_df.loc(e,"Observed Mean"), rmse_n_mean_n_std_n_ratio_df.loc(e,"Ratio_of_RMSE_and_Stdev"), label=e, marker=count)
-    #    count=count+1
-    #    if(count==11):
-    #        count=0
     rmse_n_mean_n_std_n_ratio_df.to_csv("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.csv')
     rmse_n_mean_n_std_n_ratio_n_r2_score_df.to_csv("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio_and_r2_score.csv')
-    #if len(list(rmse_n_mean_n_std_n_ratio_df.index.values)) <= 40:
-    #    mp.legend(loc=(1.04,0))
-    #else:
-    #    mp.legend(bbox_to_anchor=(1.04, 1.04, 2.04, 2.04), loc='upper left', ncol=2, mode="expand")
     mp.xticks(rotation=90)
     mp.ylabel('Ratio_of_RMSE_and_Stdev')
     mp.xlabel(label_type+" Features")
     mp.title("Observed Mean and Ratio_of_RMSE_and_Stdev",size=12)
     mp.legend(loc=(1.04,0.5))
-    #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
     mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png',bbox_inches='tight')
     mp.clf()
 
@@ -562,7 +525,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.xlabel(label_type+" Features")
     mp.title("Ratio_of_RMSE_and_Stdev and r2_score",size=12)
     mp.legend(loc=(1.04,0.5))
-    #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
     mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_rmse_std_and_ratio_and_r2_score.png',bbox_inches='tight')
     mp.clf()
     Y_test_low_ratio_df=Y_test_df[label_header_low_ratio]
@@ -576,21 +538,12 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.xlabel('Actual_values')
     mp.ylabel('Predicted_values')
     mp.title("Actual_values v/s Predicted Values - for features with Low RMSE:Actual_Stdev",size=9)
-    #mp.legend(loc=(1.04,0))
-    #mp.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-    #       ncol=2, mode="expand")
     if len(label_header_low_ratio) <= 40:
         mp.legend(loc=(1.04,0))
     else:
         mp.legend(bbox_to_anchor=(1.04, 1.04, 2.04, 2.04), loc='upper left', ncol=2, mode="expand")
-    #mp.savefig('test_result_plots_low_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
     mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_test_result_plots_low_ratio.png',bbox_inches='tight')
     mp.clf()
-
-    
-
-
-
 
     label_header_high_ratio=list(ratio_high_dict.keys())
     
@@ -608,7 +561,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.ylabel('Predicted_values')
     mp.title("Actual_values v/s Predicted Values - for features with high RMSE:Actual_Stdev",size=9)
     mp.legend(loc=(1.04,0))
-    #mp.savefig('test_result_plots_high_rmse.png',orientation='landscape',dpi=200,bbox_inches='tight')
     mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_test_result_plots_high_ratio.png',bbox_inches='tight')
     mp.clf()
 
@@ -617,15 +569,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     #Merging mean_df and rmse_dict
     if(len(ratio_low_dict)>1):
         ratio_low_df=pd.DataFrame.from_dict(ratio_low_dict,orient='index',columns=['RMSE/Stdev'])
-        #mean_for_rmse_low_df=pd.DataFrame.from_dict(mean_for_rmse_low_dict,orient='index',columns=['Mean'])
-        #mse_df=pd.DataFrame({'Label_features':label_list, 'MSE':mse_val})
-        #print(mse_df)
-        #mse_df.set_index('Label_features')
         ratio_low_df.to_csv("/data/"+tagDir+prefix+"_"+model_type+"_Labels_with_Low_Ratio.csv")
-        #mean_for_rmse_low_df.to_csv(prefix+"_"+model_type+"_Original_Mean_for_Labels_with_Low_RMSE.csv")
-
-        #rmse_low_n_mean_df = rmse_low_df.merge(mean_for_rmse_low_df, how='outer', left_index=True, right_index=True)
-        #mp.plot(rmse_low_df)
         ratio_low_df.plot(kind='bar')
         mp.ylabel('RMSE/Stdev')
         mp.xlabel('Label Features')
@@ -634,29 +578,14 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
             mp.xticks(size=5)
         else:
             mp.xticks(size=3)
-        ##mp.title(i,size=1)
         mp.title("Low RMSE/Stdev for the label features",size=12)
         mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_Low_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
         mp.clf()
-
-        #pd.plotting.scatter_matrix(rmse_low_n_mean_df)
-        #mp.title("Comparing labels with Low RMSEs against their actual Mean values")
-        #mp.savefig(prefix+'_'+model_type+'_Labels_w_Low_RMSE_and_actual_Means_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
-        #mp.clf()
-
     else:
         print("Only 1 key:value pair in ratio_low_dict, so not proceeding with its plotting")
     if(len(ratio_high_dict)>1):
         ratio_high_df=pd.DataFrame.from_dict(ratio_high_dict,orient='index',columns=['RMSE/Stdev'])
-        #mean_for_rmse_high_df=pd.DataFrame.from_dict(mean_for_rmse_high_dict,orient='index',columns=['RMSE'])
-        #mse_df=pd.DataFrame({'Label_features':label_list, 'MSE':mse_val})
-        #print(mse_df)
-        #mse_df.set_index('Label_features')
         ratio_high_df.to_csv("/data/"+tagDir+prefix+"_"+model_type+"_Labels_with_High_Ratio.csv")
-        #mean_for_rmse_high_df.to_csv(prefix+"_"+model_type+"_Original_Mean_for_Labels_with_High_RMSE.csv")
-
-        #rmse_high_n_mean_df = rmse_high_df.merge(mean_for_rmse_high_df, how='outer', left_index=True, right_index=True)
-
         mp.plot(ratio_high_df)
         mp.ylabel('RMSE/Stdev')
         mp.xlabel('Label Features')
@@ -665,12 +594,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         mp.title("High RMSE/Stdev for the label features",size=12)
         mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_High_Ratio_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
         mp.clf()
-
-        #pd.plotting.scatter_matrix(rmse_high_n_mean_df)
-        #mp.title("Comparing labels with High RMSEs against their actual Mean values")
-        #mp.savefig(prefix+'_'+model_type+'_Labels_w_High_RMSE_and_actual_Means_plot.png',orientation='landscape',dpi=100,bbox_inches='tight')
-        #mp.clf()
-
     else:
         print("Only 1 key:value pair in ratio_high_dict, so not proceeding with its plotting")
 
@@ -729,27 +652,20 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     label_resulted=[]
     for l in select_label_var_list:
         print l
-        #fig, ax_=mp.subplots(1,1,figsize=(9,9))
         decision_threshold_list=[]
         AUC_value_list=[]
-        #print Y_test_df[l]
-        #print Y_test_df[[l]]
         for i in decision_thresholds:
             print i
             Y_test_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_test_df[[l]])),threshold=i)
-            #Y_pred_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_pred_df[[l]])),threshold=i)
             Y_pred_df_n=Y_pred_df[[l]]##Keeping Ypredict to be continuous,i.e. as it is.
             if(np.all((Y_test_df_n==0))):
                 print("For decision threshold "+str(i)+":")
                 print("Seems all values for label column "+l+" are zero. Hence not considering it for decision_threshold vs AUC plot")
             else:
-                #fpr, tpr, thresholds = roc_curve(Y_test_df[[l]], Y_pred_df[[l]])
                 fpr, tpr, thresholds = roc_curve(Y_test_df_n,Y_pred_df_n)
                 print thresholds
                 print fpr
                 print tpr
-                #print auc(fpr,tpr)
-                #print l; print i
                 AUC_value=auc(fpr,tpr)
                 if(AUC_value>0.9 and r2_score_dict[l]>0.25):
                     if l not in label_resulted:
@@ -761,8 +677,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
                     continue
                 AUC_value_list.append(AUC_value)
                 decision_threshold_list.append(i)
-                #if i==0.0:
-                #    print "AUC for threshold "+str(i)+" and module "+l+"= "+str(AUC_value)
         if(len(AUC_value_list)>=8 and len(decision_threshold_list)>=8):
             mp.plot(decision_threshold_list, AUC_value_list, label = '%s' % (l), linewidth=1, alpha=3)
             #label_resulted.append(l)
@@ -776,7 +690,6 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     mp.ylabel('AUC')
     mp.ylim(bottom=0.0)
     mp.xlim(left=0.1, right=0.9)
-    #mp.xticks([0.0,0.2,0.4,0.6,0.8,1.0])
     mp.savefig("/data/"+tagDir+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png',orientation='landscape',dpi=100,bbox_inches='tight')
     mp.clf()
     data_image4 = open("/data/"+tagDir+prefix+'_'+model_type+'_AUC_for_decision_thresholds.png', 'rb').read().encode('base64').replace('\n', '')
@@ -786,25 +699,23 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     outfileHTML.write('Content-type: text/html\n\n'+""+"\n"+'<link href="default.css" rel="stylesheet" type="text/css" />')
     return label_resulted
 
-## Model prediction function    
+## MODEL PREDICTION function    
 def predict(model , test):
     '''
     get model predictions
     '''
     Y_pred = model.predict(test)
     return Y_pred
-##Defining the entire process starting from training through testing and validation per the modes of operation specified by user.       
+
+##PROCESS FUNCTION: Entailing the entire process starting from training through testing and validation per the modes of operation specified by user.       
 def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=None):
     if(featureSelFrmModel_flag==None or featureSelFrmModel_flag==0):
         tagDir=""
     elif(featureSelFrmModel_flag==1):
         tagDir="FeaturesSelFrmModel.txt/"
-        
-    #outfileHTML=open(model_type+".output.html",'a')
     if os.path.isfile(data_):
         if os.path.getsize(data_)!=0:
             dataframe = read_dataset(data_)
-            #print dataframe
         else:
             sys.exit("Size of data_ file"+data_+" is zero")
     else:
@@ -813,57 +724,43 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         if(os.path.isfile(label_)):
             if(os.path.getsize(label_)!=0):
                 label = read_dataset(label_)
-                #print label
-                #label_header=list(label.keys())
             else:
                 sys.exit("Size of label_ file:"+label_+"  is zero")
         else:
             sys.exit("data_ file:"+data_+" does not exists as a regular file")
     else:
         label='NA'
-    #if(mode!='predict'):
-    #    correlation(dataframe,label)
     dataframe , label, sampleIDs, label_header, dataframe_header =  preprocessing(dataframe , label, data_type, label_type, mode, tagDir)
-    #print "after dataframe"; print dataframe;
-    #print "after label"; print label;
-    
+    ##When mode selected is "Train"
     if(mode!='predict' and mode!='validate'):
         if(featureSelFrmModel_flag==0 or featureSelFrmModel_flag==None):
             select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method, tagDir)
         elif(featureSelFrmModel_flag==1):
             select_data_var_list=dataframe_header; select_label_var_list=label_header
         print select_label_var_list
-        #print label
-        #print label[select_label_var_list]
-        #print "filtered dataframe"; print filtered_dataframe
-        #print(select_data_var_list)
         outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
         outfileHTML.write("<h1 style=text-align:center>"+"----------------------------------Features with highly significant correlations-------------------------------------"+"</h1>"+"\n")
         dataframe = dataframe[select_data_var_list]
         outfileHTML.write("<h2>"+"Below is the list of "+data_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h5>"+str(list(dataframe.keys()))+"</h5>"+"\n")
-        #print("Below is the final list of data features used for training")
-        #print(list(dataframe.keys()))
         label = label[select_label_var_list]
         print label
         print dataframe
 
         outfileHTML.write("<h2>"+"Below is the list of "+label_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h5>"+str(list(label.keys()))+"</h5>"+"\n")
-        #print("Below is the final list of label features used for training")
-        #print(list(label.keys()))
         outfileHTML.write("<h2>"+"Number of "+data_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h3>"+str(len(select_data_var_list))+"</h3>"+"\n")
-        #print("Below is the expected entries for data features")
-        #print(len(select_label_var_list))
         outfileHTML.write("<h2>"+"Number of "+label_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h3>"+str(len(select_label_var_list))+"</h3>"+"\n")
         outfileHTML.close()
+    ##When mode selected is "predict"
     elif(mode=='predict'):
         if(len(select_data_headers_for_predict)!=0):
             dataframe = dataframe[select_data_headers_for_predict]
         if(len(select_label_headers_for_predict)!=0):
             label_header_for_predict = select_label_headers_for_predict
+    ##When mode set to "validate"
     elif(mode=='validate'):
         if(len(select_data_headers_for_predict)!=0):
             dataframe = dataframe[select_data_headers_for_predict]
@@ -873,6 +770,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         else:
             select_label_var_list_for_validate=label_header
 
+    ##TRAINING and TESTING the model
     if mode == 'Train':
         train , Y_train ,test , Y_test = splitdata(dataframe , label, test_size, mode, data_normalize_method, label_normalize_method, data_type, label_type, select_data_var_list, select_label_var_list, tagDir)
         print("Staring Training of :{}".format(model_type))
@@ -885,12 +783,11 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
                 print("Saving model failed")
         else:
             print("Please provide save dir")
-    
+    ##PREDICTION
     elif mode == 'predict':
         print("Performing Prediction")
         try:
             model = joblib.load(str(load_model))
-            #model = pickle.loads(load_model)
             print(model.get_params)
 
             outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
@@ -901,7 +798,6 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
                 outfileHTML.write("<h4>"+str(i)+":"+str(store_params[i])+"</h4>")
             outfileHTML.write("<h2 style=text-align:center;color:green>"+"------------------------Samples for Prediction-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"No. of samples input for prediction: "+str(len(sampleIDs))+"</h3>")
-            #outfileHTML.close()
 
             ##Normalizing data
             outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for prediction set"+"</h3>"+"\n")
@@ -921,7 +817,6 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
                 outfileH.write("sampleID"+"\t"+"\t".join(label_header_for_predict)+"\n")
                 outfileH.close()
                 outfileH=open("/data/"+tagDir+prediction_out,'a')
-            #outfileHTML.write("<h4>"+"Checking if No. of samples provided as input = No. of samples predicted"+"</h4>")
             if len(sampleIDs) != len(Y_pred):
                 outfileHTML.write("<h5 style=color:red>"+"No. of samples provided as input DO NOT MATCH WITH No. of samples predicted. Therefore, no prediction performed. Kindly investigate the log file for errors"+"</h5>")
                 sys.exit("The number of samples in ID column in the data does not match with the number of samples for which predicted values were obtained. Kindly check your data file for possible issues.")
@@ -944,12 +839,11 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             print("Probably saved model file is not provided/check path")
         except (IndexError, ValueError), err_:
             print("Seems an IndexError or a ValueError was encountered during prediction. Error msg is as follows: "+str(err_))
-    
+    ##VALIDATION of the model
     elif mode == 'validate':
         print("Performing validation")
         try:
             model = joblib.load(str(load_model))
-            #model = pickle.loads(load_model)
             print(model.get_params)
             outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
             store_params=model.get_params();
@@ -959,9 +853,6 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
                 outfileHTML.write("<h4>"+str(i)+":"+str(store_params[i])+"</h4>")
             outfileHTML.write("<h2 style=text-align:center;color:green>"+"------------------------Samples for Validation-----------------------"+"</h2>")
             outfileHTML.write("<h3>"+"No. of samples used for validation: "+str(len(sampleIDs))+"</h3>")
-            #outfileHTML.close()
-            #for i in label_header:
-            #dataframe = dataframe.loc[:, (dataframe<=0).any(axis=0)]
             
             ##Normalizing data
             outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
@@ -1024,8 +915,8 @@ if __name__ == "__main__":
     corr_method = config['modes']['correlation_method']
     corr_threshold = float(config['modes']['correlation_threshold'])
     pVal_adjust_method = config['modes']['pVal_adjust_method']
-    #classification = config['modes']['classification']
-    ##getting select data and label features from respective parameters in 'modes' section
+
+    ##getting data and label features from respective parameters in 'modes' section, useful when validating a model that ended up trained on selected features.
     select_data_headers_for_predict = config['modes']['select_data_headers_for_predict']
     select_label_headers_for_predict = config['modes']['select_label_headers_for_predict']
     if isinstance(select_data_headers_for_predict,unicode):
@@ -1038,7 +929,6 @@ if __name__ == "__main__":
             select_label_headers_for_predict=ast.literal_eval(select_label_headers_for_predict)
         except ValueError:
             select_label_headers_for_predict=select_label_headers_for_predict.encode('utf-8')
-    #print select_data_headers_for_predict; print select_label_headers_for_predict
     
     #storing params for model from sections in config
     section_flag=0; params = {}; param_grid = {};
@@ -1112,9 +1002,7 @@ if __name__ == "__main__":
     outfileHTML.close()
     outfileHTML2.close()
     
-    ## CALLING THE PROCESS FUNCTION.
-
-
+    ##CALL the PROCESS FUNCTION.
     process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=0)
     ##Calling process again with feature selection flag (featureSelFrmModel_flag) equal to 1, so that the feature selection performed using SelectFromModel module (i.e., Feature Selection using Feature Importances from model), and the correlation module is skipped completely.
     if mode == "Train":
