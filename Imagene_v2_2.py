@@ -22,7 +22,6 @@ import os, re, sys, math
 import argparse
 import numpy as np
 import pandas as pd
-#from pandas.stats.api import ols
 import joblib
 import pickle
 import configparser
@@ -49,7 +48,6 @@ from scipy import stats
 from scipy.interpolate import make_interp_spline, BSpline
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
-#model packages
 from sklearn import linear_model
 from sklearn import tree
 from sklearn.linear_model import ElasticNet
@@ -65,13 +63,10 @@ import scikitplot as skplt
 from math import sqrt
 import base64
 from datetime import datetime
-#import statsmodels as statsm
-#import statsmodels.api as smapi
-#from mpl_toolkits.mplot3d import Axes3D
-#import rpy2.robjects as R
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import FloatVector
-##Correlation function establishes correlations between gene and imaging features and calculates FDR adjusted pvalues further to establish statistical significance of those correlations.
+
+##CORRELATION function establishes correlations between gene and imaging features and calculates FDR adjusted pvalues further to establish statistical significance of those correlations.
 def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_threshold,pVal_adjust_method, tagDir):
     pval=dict()
     pcorr=dict()
@@ -94,7 +89,6 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
     
     
     Master_df_sorted=Master_df.sort_values(by=['p_adjust'])
-    #print(pcorr_PAJ_df_sorted.head(30))
     Master_df_sorted.to_csv("/data/All_correlations.csv")
 
     if(pVal_adjust_method=="none" or corr_threshold < 0.0):
@@ -107,7 +101,6 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
     
     Master_df_sorted_sgn.to_csv("/data/Significant_correlations.csv")
     Master_df_sorted_sgn_filtered.to_csv("/data/Significant_correlations_gt_corr_threshold.csv")
-    #print(Master_df_sorted_sgn)
     List_of_Var1=Master_df_sorted_sgn_filtered["Var1"].tolist()
     List_of_Var2=Master_df_sorted_sgn_filtered["Var2"].tolist()
     fC_List_Var1=[]
@@ -116,17 +109,12 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
         fC_List_Var1.append(fC)
     fC_uniq = sorted(set(fC_List_Var1))
 
-    #outfileHTML=open(model_type+".output.html",'w')
     image_tag_list=[]
-    #image_count=0
 
     for i in fC_uniq:
         print(i)
-        #fC_df=Master_df_sorted_sgn[Master_df_sorted_sgn['Var1'].str.match(i, case=True, flags=0)].head(50)
-        #fC_df=Master_df_sorted_sgn[Master_df_sorted_sgn['Var1'].str.contains(i, regex=False, na=False)].head(50)
         fC_df=Master_df_sorted_sgn_filtered[Master_df_sorted_sgn_filtered['Var1'].str.contains(i, regex=False, na=False)]
         fC_df_pivot=fC_df.pivot_table(index="Var1",columns="Var2",values="correlation",fill_value=0)
-        #fC_df_pivot = pd.pivot_table(fC_df, index = "Var1", values = ["Var2", "spearman_correlation"]).stack().reset_index(level = 1) 
         print("For "+i+" features:")
         print(fC_df_pivot)
         try:
@@ -147,17 +135,12 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
         mp.clf()
 
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
-    #outfileHTML.write("<h1 style=text-align:center;color:red;>"+"Radiogenomics Analysis Report"+"</h1>"+"\n")
     outfileHTML.write("<h2 style=text-align:center;>"+"--------------------------Multivariate Correlations ("+corr_method+" based)-----------------------"+"</h2>"+"\n".join(image_tag_list)+"\n")
     outfileHTML.close()
 
-
-
-
-
     return(sorted(set(List_of_Var1)),sorted(set(List_of_Var2)))
 
-##Reading datasets
+##READ datasets
 def read_dataset(dataset):
     if os.path.isfile(dataset):
         raw_dataframe = pd.read_csv(dataset, sep=',')
@@ -167,127 +150,86 @@ def read_dataset(dataset):
     dataframe = raw_dataframe.copy()
     print("Shape of dataframe:{}".format(dataframe.shape))
     return dataframe
-##Normalization function
+
+##NORMALIZATION function
 def normal_dataframe(dataframe, norm_type, header, normalize = True):
     if normalize:
         if norm_type =='min_max':
             scaler = MinMaxScaler()
             dataframe_scaled = scaler.fit_transform(dataframe)
-            #return dataframe_scaled
-        
         elif norm_type == 'Stand_scaler':
             scaler = StandardScaler()
             dataframe_scaled = scaler.fit_transform(dataframe)
-            #return dataframe_scaled
-        
-        ##Removing Zscore as it is redundant to StandScaler
-        #elif norm_type == 'zscore':
-        #    dataframe_scaled = stats.zscore(dataframe)
-        #    #return dataframe_scaled
-        
         elif norm_type == 'MaxAbsScaler':
             scaler = MaxAbsScaler()
             dataframe_scaled = scaler.fit_transform(dataframe)
-            #return dataframe_scaled
         else:
             print("Invalid normalization type/method detected. Skipping normalization. If you wish to normalize this dataset, then correct the normalization_method in the config file and rerun. Proceeding with no normalization")
-            ## The dataframe needs to be converted to numpy to be consistent with the return value when normalization method is detected and normalization actually happens.
-            #d_array = dataframe.to_records(index='True')
-            #feature_array = d_array.indices()
-            #return d_array, feature_array
-            ##Switch back to returning dataframe
             return dataframe
-        ##SILENTING conversion of numpy into dataframe as we do want to return numpy array now that the calling of normal_dataframe occurs outside the preprocessing function.
-        ##Switch back to converting numpy into dataframe
         dataframe_scaled=pd.DataFrame(data=dataframe_scaled,columns=header)
-        #feature_array=scaler.feature_names_in_
         return dataframe_scaled
     else:
-        #d_array = dataframe.to_records(index='True')
-        #feature_array = d_array.indices()
-        #return d_array, feature_array
-        ##Switch back to returning dataframe
         return dataframe
-##Preprocessing of datasets    
-def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkNA = True):
-    #try:
-        outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
-        outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
-        if(isinstance(label,pd.DataFrame)):
-            outfileHTML.write("<h3>"+"No. of "+label_type+" features provided:"+str(len(label.columns)-1)+"</h3>")   
-        if checkNA:
-            dataframe.replace("", np.nan, inplace=True)
-            if dataframe.isnull().values.any():
-                dataframe = dataframe.dropna(axis=1, how='any')
-            if isinstance(label,pd.DataFrame):
-                label.replace("", np.nan, inplace=True)
-                if label.isnull().values.any():
-                    label = label.dropna(axis=1, how='any')
-                    #print label
-        if isinstance(label,pd.DataFrame):
-            if dataframe['ID'].equals(label['ID']):
-                outfileHTML.write("<h3>"+"SampleID check results: 'The SampleIDs match for "+data_type+" and "+label_type+" features'"+"</h3>"+"\n")
-                #outfileHTML.write("<h3>"+"No. of samples: "+"</h3>"+"\n")
-                print("The SampleIDs match for "+data_type+" and "+label_type+" features")
-                #dataframe = dataframe.drop(['ID'],axis = 1)
-                #label = label.drop(['ID'],axis = 1)
-            else:
-                sys.exit("The SampleIDs in data and label vary. Cannot proceed further. Please fix and rerun!")
-            label = label.drop(['ID'],axis = 1)
-            label_header=list(label.keys())
-        else:
-            label_header="NA"
-        sampleIDs = dataframe['ID']
-        outfileHTML.write("<h3>"+"No. of samples: "+str(len(sampleIDs))+"</h3>"+"\n")
-        dataframe = dataframe.drop(['ID'],axis = 1)
-        dataframe_header=list(dataframe.keys())
-        
-        ## SILENTING normalization on entire dataset as train and test dataset has to undergo normalizations differently later, thereby preventing leakage of test into train.
-        #if data_normalize_method != 'none':
-        #    print("performing "+data_normalize_method+" normalization for "+data_type+" features")
-        #    outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features"+"</h3>"+"\n")
-        #    dataframe = normal_dataframe(dataframe ,data_normalize_method, dataframe_header)
-            #print(dataframe)
-        #if isinstance(label,pd.DataFrame):
-        #    if label_normalize_method != 'none':
-        #        #print(label)
-        #        print("performing "+label_normalize_method+" for "+label_type+" features")
-        #        outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features"+"</h3>"+"\n")
-        #        label = normal_dataframe(label ,label_normalize_method, label_header)
-        outfileHTML.close()
-        #c_=pd.concat([dataframe1, dataframe2], axis=1)
-        print(dataframe)
-        #dataframe = dataframe.loc[:, (dataframe!=0).any(axis=0)]; nan_value = float("NaN"); dataframe.replace("", nan_value, inplace=True); dataframe=dataframe.dropna()
-        #dataframe_header=list(dataframe.keys())
-        print(dataframe.shape[1])
-        if isinstance(label,pd.DataFrame):
-            #label = label.loc[:, (label!=0).any(axis=0)]; label.replace("", nan_value, inplace=True); label=label.dropna()
-            print(label)
-            #label_header=list(label.keys())
-            print(label.shape[1])
-        return dataframe , label, sampleIDs, label_header, dataframe_header
 
-##Train-test split function    
+##PREPROCESSING of datasets    
+def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkNA = True):
+    outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
+    outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
+    if(isinstance(label,pd.DataFrame)):
+        outfileHTML.write("<h3>"+"No. of "+label_type+" features provided:"+str(len(label.columns)-1)+"</h3>")   
+    if checkNA:
+        dataframe.replace("", np.nan, inplace=True)
+        if dataframe.isnull().values.any():
+            dataframe = dataframe.dropna(axis=1, how='any')
+        if isinstance(label,pd.DataFrame):
+            label.replace("", np.nan, inplace=True)
+            if label.isnull().values.any():
+                label = label.dropna(axis=1, how='any')
+                #print label
+    if isinstance(label,pd.DataFrame):
+        if dataframe['ID'].equals(label['ID']):
+            outfileHTML.write("<h3>"+"SampleID check results: 'The SampleIDs match for "+data_type+" and "+label_type+" features'"+"</h3>"+"\n")
+            #outfileHTML.write("<h3>"+"No. of samples: "+"</h3>"+"\n")
+            print("The SampleIDs match for "+data_type+" and "+label_type+" features")
+            #dataframe = dataframe.drop(['ID'],axis = 1)
+            #label = label.drop(['ID'],axis = 1)
+        else:
+            sys.exit("The SampleIDs in data and label vary. Cannot proceed further. Please fix and rerun!")
+        label = label.drop(['ID'],axis = 1)
+        label_header=list(label.keys())
+    else:
+        label_header="NA"
+    sampleIDs = dataframe['ID']
+    outfileHTML.write("<h3>"+"No. of samples: "+str(len(sampleIDs))+"</h3>"+"\n")
+    dataframe = dataframe.drop(['ID'],axis = 1)
+    dataframe_header=list(dataframe.keys())
+    
+    outfileHTML.close()
+
+    print(dataframe)
+    print(dataframe.shape[1])
+    
+    if isinstance(label,pd.DataFrame):
+        print(label)
+        print(label.shape[1])
+    
+    return dataframe , label, sampleIDs, label_header, dataframe_header
+
+##SPLITTING of data into TRAIN and TEST datasets   
 def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header, tagDir):
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
+    
     ##Converting numpy arrays to dataframe to perform normalization on them
     train=pd.DataFrame(data=train,columns=dataframe_header)
     print(train)
-    #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
-    
     test=pd.DataFrame(data=test,columns=dataframe_header)
     print(test)
-    #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
-    
     Y_train=pd.DataFrame(data=Y_train,columns=label_header)
     print(Y_train)
-    #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
-    
     Y_test=pd.DataFrame(data=Y_test,columns=label_header)
     print(Y_test)
-    #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
-    #if mode_=="Train":
+
     ##Introducing normalizations for TRAIN and TEST datasets.
     if data_normalize_method != 'none':
         print("performing "+data_normalize_method+" normalization for "+data_type+" features")
@@ -295,19 +237,12 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
         ##NORMALIZING TRAIN data
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TRAIN set"+"</h3>"+"\n")
         train= normal_dataframe(train, data_normalize_method, dataframe_header)
-        ##Convert to dataframe with indices
-        #train_df = pd.DataFrame(train, index = train_features)
-        #train=train[:, ~np.isnan(train).any(axis=0)]
-        #train= train.loc[:, (train!=0).any(axis=0)]; nan_value = float("NaN"); train.replace("", nan_value, inplace=True); train=train.dropna()
         print("Printing Normalized Train data:")
         print(train)
 
         ##NORMALIZING TEST set
         outfileHTML.write("<h3>"+"performing "+data_normalize_method+" normalization for "+data_type+" features for TEST set"+"</h3>"+"\n")
         test= normal_dataframe(test, data_normalize_method, dataframe_header)
-        #test_df = pd.DataFrame(test, index = test_features)
-        #test=test[:, ~np.isnan(test).any(axis=0)]
-        #test= test.loc[:, (test!=0).any(axis=0)]; nan_value = float("NaN"); test.replace("", nan_value, inplace=True); test=test.dropna()
         print("Printing Normalized Test data:")
         print(test)
 
@@ -318,18 +253,12 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
             ##NORMALIZING TRAINING label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TRAIN set"+"</h3>"+"\n")
             Y_train = normal_dataframe(Y_train, label_normalize_method, label_header)
-            #Y_train_df = pd.DataFrame(Y_train, index = Y_train_features)
-            #Y_train=Y_train[:, ~np.isnan(Y_train).any(axis=0)]
-            #Y_train= Y_train.loc[:, (Y_train!=0).any(axis=0)]; nan_value = float("NaN"); Y_train.replace("", nan_value, inplace=True); Y_train=Y_train.dropna()
             print("Printing Normalized Train label:")
             print(Y_train)
 
             ##NORMALIZING TEST label
             outfileHTML.write("<h3>"+"performing "+label_normalize_method+" for "+label_type+" features for TEST set"+"</h3>"+"\n")
             Y_test = normal_dataframe(Y_test, label_normalize_method, label_header)
-            #Y_test_df = pd.DataFrame(Y_test, index = Y_test_features)
-            #Y_test=Y_test[:, ~np.isnan(Y_test).any(axis=0)]
-            #Y_test= Y_test.loc[:, (Y_test!=0).any(axis=0)]; nan_value = float("NaN"); Y_test.replace("", nan_value, inplace=True); Y_test=Y_test.dropna()
             print("Printing Normalized Test label:")
             print(Y_test)
     
@@ -338,11 +267,10 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
     outfileHTML.write("<h3>"+"No. of samples for test:{}".format(len(test))+"</h3>"+"\n")
     outfileHTML.close()
     print("Trainig data:{} , Testing data:{} ".format(len(train) ,len(test)))
-    #if mode_=="validate":
-    #    print("Custom test data:{} ".format(len(test)))
+
     return train , Y_train , test , Y_test
 
-##Build models, multiple options of modeltypes accepted from user per the method list below
+##MODEL BUILDING: multiple options of modeltypes accepted from user
 def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, featureSelFrmModel_flag, tagDir, trainmodel):
     '''
     initializing model and training the model
@@ -351,7 +279,6 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
     outfileHTML.write("<h2 style=text-align:center;color:blue>"+"--------------------------Model Summary-----------------------"+"</h2>"+"\n")
     if method in ['DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel']:
         if gridsearch == 'True':
-            #param_grid_keys=list(param_grid.keys())
             if 'cv' in param_grid.keys():
                 cv_grid=param_grid['cv']
                 del param_grid['cv']
@@ -362,28 +289,15 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 del param_grid['scoring']
             else:
                 scoring_grid=None
-            #for i in param_grid_keys:
-            #    if re.search('cv',i):
-            #        cv_grid = param_grid[i]
-            #        del param_grid[i]
-            #    elif re.search('scoring',i):
-            #        scoring_grid = param_grid[i]
-            #        del param_grid[i]
-            #    else:
-            #        continue
         if method == 'LASSO':
             if gridsearch == 'True':
                 try:
                     print(" Starting grid search for LASSO")
                     model = GridSearchCV(linear_model.Lasso(), param_grid=param_grid,cv=cv_grid,scoring=scoring_grid)
-                    #print(model.get_params)
                 except:
                     print("Grid search status:{}".format(grid_search))
             else:
-                #model = linear_model.Lasso(alpha=alpha_lasso)
                 model = linear_model.Lasso(**params)
-                #print(model.get_params)
-                
         if method == 'DecisionTree':
             if gridsearch == 'True':
                 try:
@@ -392,9 +306,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                 except:
                     print("Grid search status:{}".format(grid_search))
             else:
-                model = tree.DecisionTreeRegressor(**params)
-                #print(model.get_params)
-                
+                model = tree.DecisionTreeRegressor(**params)  
         if method == 'LinearRegression':
             if gridsearch == 'True':
                 try:
@@ -404,13 +316,8 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = LinearRegression(**params)
-                #print(model.get_params)
-
-        
         if method == 'LinearModel': 
             if gridsearch == 'True':
-                #random_state=param_grid['random_state']
-                #del new_param_grid['random_state']
                 try:
                     print("Starting grid search for ElasticNet")
                     model = GridSearchCV(ElasticNet(), param_grid=param_grid , cv = cv_grid , scoring=scoring_grid)
@@ -418,25 +325,17 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = ElasticNet(**params)
-                #print(model.get_params)
-
         if method == 'multiTaskLASSO':
             if gridsearch == 'True':
                 try:
                     print(" Starting grid search for MultiTaskLASSO")
                     model = GridSearchCV(linear_model.MultiTaskLasso(), param_grid=param_grid,cv=cv_grid,scoring=scoring_grid)
-                    #print(model.get_params)
                 except:
                     print("Grid search status:{}".format(grid_search))
             else:
-                #model = linear_model.Lasso(alpha=alpha_lasso)
                 model = linear_model.MultiTaskLasso(**params)
-                #print(model.get_params)
-
         if method == 'multiTaskLinearModel': 
             if gridsearch == 'True':
-                #random_state=param_grid['random_state']
-                #del new_param_grid['random_state']
                 try:
                     print("Starting grid search for MultiTaskElasticNet")
                     model = GridSearchCV(MultiTaskElasticNet(), param_grid=param_grid , cv = cv_grid , scoring=scoring_grid)
@@ -447,80 +346,68 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
     else:
         print("options are :DecisionTree, LinearRegression, LinearModel, LASSO, LinearModel (aka ElasticNet), multiTaskLinearModel, multiTaskLASSO")
     if trainmodel:
-        #try:
-            '''
-            performing training
-            '''
-            ## ADDING SelectFromModel for Feature Selection using model and using only those features for training and testing further (change featureSelFrmModel_flag to sfm_flag later)
-            if(featureSelFrmModel_flag==1):
-                column_headers__=train.columns
-                selector = SelectFromModel(estimator=model).fit(train, Y_train)
-                ##Skipping the transform as it yields numpy array. Rather getting an array of features with "True or False" for selection. Extracting headers and then selecting only those features from train and test dataframes below.
-                #train=selector.transform(train)##The output is numpy array without headers.
-                ##Get an array of "True or False" for features. True means selected, False means not-selected. Selection happens through feature importances yield by the model using SelectFromModel function above.
-                feature_selected_or_not_=selector.get_support()
-                ##Make a dataframe of that array which has the header as names of each feature.
-                fsd=pd.DataFrame(data=feature_selected_or_not_)
-                fsd=pd.DataFrame.transpose(fsd)
-                fsd.columns=column_headers__
-                print(fsd)
-                ##Drop the features that are "False", i.e. not selected.
-                fsd=fsd.drop(columns=fsd.columns[(fsd == False).any()])
-                print("These are the features selected by SelectFromModel function")
-                print(fsd)
-                fsd.to_csv("/data/"+tagDir+'_'+model_type+'_features_selected.txt')
-                feature_headers__=fsd.columns
-                ##Converting numpy array to dataframe with headers for selected features.
-                #train=pd.DataFrame(data=train,columns=feature_headers__)##no need to generate dataframe from numpy array anymore
-                train=train[feature_headers__]
-                print("This is the train set post feature selection")
-                print(train)
-                ##Selecting same features in test as well.
-                print("This is the test set post feature selection")
-                test=test[feature_headers__]
-                print(test)
-            
-            #outfileHTML=open(model_type+".output.html",'a')
-            #outfileHTML.write("<h1>"+"--------------------------Model Summary-----------------------"+"</h1>"+"\n")
-            outfileHTML.write("<h3>"+"Model Type : "+method+"</h3>"+"\n")
-            if gridsearch == 'True':
-                
-                grid_result = model.fit(train ,Y_train)
-                outfileHTML.write("<h4>"+"Grid Search Metrics"+"</h4>"+"\n")
-                #outfileHTML.write("<h3>"+"Best Parameters: "+"</h3>"+"\n")
-                #outfileHTML.write("<h3>"+ "scoring="+str(scoring_grid)+"</h3>"+"\n")
-                outfileHTML.write("\n"+"<h5>"+'Best Score : '+str(grid_result.best_score_)+"</h5>"+"\n")
-            
-            else:
-                scores = cross_val_score(model.fit(train ,Y_train), train , Y_train, cv=cv_par , scoring = scoring_par)
-                outfileHTML.write("<h4>"+"Cross Validation Metrics:"+"</h4>"+"\n")
-                outfileHTML.write("<h5>"+"Parameters: cv="+str(cv_par)+"  scoring="+str(scoring_par)+"</h5>"+"\n")
-                outfileHTML.write("<h5>"+"Cross validation score:{}".format(-1*scores.mean())+"</h5>"+"\n")
+        '''
+        performing training
+        '''
+        ## ADDING SelectFromModel for Feature Selection using model and using only those features for training and testing further (change featureSelFrmModel_flag to sfm_flag later)
+        if(featureSelFrmModel_flag==1):
+            column_headers__=train.columns
+            selector = SelectFromModel(estimator=model).fit(train, Y_train)
+            feature_selected_or_not_=selector.get_support()
+            ##Make a dataframe of that array which has the header as names of each feature.
+            fsd=pd.DataFrame(data=feature_selected_or_not_)
+            fsd=pd.DataFrame.transpose(fsd)
+            fsd.columns=column_headers__
+            print(fsd)
+            ##Drop the features that are "False", i.e. not selected.
+            fsd=fsd.drop(columns=fsd.columns[(fsd == False).any()])
+            print("These are the features selected by SelectFromModel function")
+            print(fsd)
+            fsd.to_csv("/data/"+tagDir+'_'+model_type+'_features_selected.txt')
+            feature_headers__=fsd.columns
+            ##Converting numpy array to dataframe with headers for selected features.
+            train=train[feature_headers__]
+            print("This is the train set post feature selection")
+            print(train)
+            ##Selecting same features in test as well.
+            print("This is the test set post feature selection")
+            test=test[feature_headers__]
+            print(test)
+        outfileHTML.write("<h3>"+"Model Type : "+method+"</h3>"+"\n")
+        
+        ##EXECUTING GRID-SEARCH based on whether the grid_search parameter set True
+        if gridsearch == 'True':
+            grid_result = model.fit(train ,Y_train)
+            outfileHTML.write("<h4>"+"Grid Search Metrics"+"</h4>"+"\n")
+            outfileHTML.write("\n"+"<h5>"+'Best Score : '+str(grid_result.best_score_)+"</h5>"+"\n")
+        else:
+            scores = cross_val_score(model.fit(train ,Y_train), train , Y_train, cv=cv_par , scoring = scoring_par)
+            outfileHTML.write("<h4>"+"Cross Validation Metrics:"+"</h4>"+"\n")
+            outfileHTML.write("<h5>"+"Parameters: cv="+str(cv_par)+"  scoring="+str(scoring_par)+"</h5>"+"\n")
+            outfileHTML.write("<h5>"+"Cross validation score:{}".format(-1*scores.mean())+"</h5>"+"\n")
 
-            store_params=model.get_params();
-            outfileHTML.write("<h3>"+"Model Parameters:"+"</h3>"+"\n")
-            for i in store_params.keys():
-                outfileHTML.write("<h4>"+str(i)+":"+str(store_params[i])+"</h4>")
-            
-            #Y_pred_train = model.predict(train)
-            #print("MSE of Train set:{}".format(metrics.mean_squared_error(Y_train, Y_pred_train)))
-            #Y_pred = model.predict(test)
-            #print("MSE of Test set:{}".format(metrics.mean_squared_error(Y_test, Y_pred)))
-
-            outfileHTML.close()
-            evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir)
-            print(Y_test)
-            returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir)
-            ##Permut each label coulmn of the test dataset 100 times and validate the model
-            for l in returned_label_resulted:
-                for n in range(1,21):
-                    Y_test[[l]]=np.random.permutation(Y_test[[l]])
-                    evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type, tagDir)
-        #except:
-            #print(" Issue with model training")
+        store_params=model.get_params();
+        outfileHTML.write("<h3>"+"Model Parameters:"+"</h3>"+"\n")
+        for i in store_params.keys():
+            outfileHTML.write("<h4>"+str(i)+":"+str(store_params[i])+"</h4>")
+        outfileHTML.close()
+        
+        ##CALL EVALUATION for TRAIN set
+        evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir)
+        
+        print(Y_test)
+        ##CALL EVALUATION for TEST set
+        returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir)
+        
+        ##PERMUT each label column of the test dataset 20 times and validate the model. This aids in p-value calculation post run.
+        for l in returned_label_resulted:
+            for n in range(1,21):
+                Y_test[[l]]=np.random.permutation(Y_test[[l]])
+                evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type, tagDir)
         
     return model
-##Evaluate the models for test or validation.
+
+##EVALUATE the models for TEST set or validation set.
 def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type, tagDir):
     '''
     evalauting the model preformance 
