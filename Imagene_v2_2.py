@@ -68,6 +68,36 @@ from rpy2.robjects.vectors import FloatVector
 
 ##CORRELATION function establishes correlations between gene and imaging features and calculates FDR adjusted pvalues further to establish statistical significance of those correlations.
 def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_threshold,pVal_adjust_method, tagDir):
+    '''
+        Conduct correlations for the given data and label features depending on the correlation method (aka pearson or spearman) and correlation co-efficient threshold chosen by user.
+        Returns signficantly(p_adjust<0.05) correlated features. Users have option to select the method used to adjust p-values. Check parameter settings below.
+        ##Note that all parameters are set in respective config.ini (if running imagene through CLI on linux/mac terminal) or directly on ImaGene's web platform if running there.
+
+        :param d1: data features
+        :type d1: dataframe
+        :param d2: label features
+        :type d1: dataframe
+        :param d2: label features
+        :type d1: dataframe
+        :param d_1_header: data header
+        :type d_1_header: list
+        :param d_2_header: label header
+        :type d_2_header: list
+        :param model_type: Type of the model, options: {'DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel'}, default: None 
+                            ##Note: This parameter is mainly used here to tag output file name with appropriate model_type, i.e. for which ML-build execute later in BuildModel function.
+                            ##Helps to track experimental output files better, i.e. when correlated features (output from this function) are fed further to building the ML models in the BuildModel call from Process function defined towards the bottom of the script.
+        :type model_type: str
+        :param corr_method: Correlation method used, options: {'Pearson', 'Spearman'}
+        :type corr_method: str
+        :param corr_threshold: Threshold for correlation co-efficient, options: {-1.0,0.0,0.1...1.0}, default:0.5
+                            ##Note: To silent correlation threshold filtering, set the threshold to -1.0
+        :type corr_threshold: float
+        :param pVal_adjust_method: The method to correct p-values, options: {'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'}, default: BH
+        :type pVal_adjust_method: str
+        :param tagDir: The sub-directory name to store files in. Could be kept empty (i.e. "") or filled with a name. Gets filled automatically when pipeline runs in second mode (automatically), i.e. "FeatureSelection".
+                        ##Note: This is not a user-governed parameter. Internally set and used by the pipeline.
+        :type tagDir: str
+    '''
     pval=dict()
     pcorr=dict()
     Var1_list=[]; Var2_list=[]; spCorr_list=[]; pvalue_list=[]
@@ -142,6 +172,13 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
 
 ##READ datasets
 def read_dataset(dataset):
+    '''
+        Reads dataset and converts to dataframe.
+        Returns dataframe.
+
+        :param dataset: dataset file (".csv")
+        :type dataset: file
+    '''
     if os.path.isfile(dataset):
         raw_dataframe = pd.read_csv(dataset, sep=',')
     else:
@@ -153,6 +190,19 @@ def read_dataset(dataset):
 
 ##NORMALIZATION function
 def normal_dataframe(dataframe, norm_type, header, normalize = True):
+    '''
+        Normalizes data based on normalization method specified by user.
+        Returns normalized dataframe.
+
+        :param dataframe: dataframe for the data to be normalized
+        :type dataframe: dataframe
+        :param norm_type: Normalization type/method, options: {'min_max' , 'Stand_scaler' , 'MaxAbsScaler', 'none'}, default: None
+        :type norm_type: str
+        :param header: A header-list containing column names for dataframe.
+        :type dataframe: list
+        :param normalize: A boolean parameter indicating whether to normalize the dataframe or not. default: True.
+        :type normalize: bool
+    '''
     if normalize:
         if norm_type =='min_max':
             scaler = MinMaxScaler()
@@ -173,6 +223,26 @@ def normal_dataframe(dataframe, norm_type, header, normalize = True):
 
 ##PREPROCESSING of datasets    
 def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkNA = True):
+    '''
+        Preprocessing of dataframe to check SampleIDs and eliminate columns containing 'nan' value in one or more than one cells.
+        Returns processed dataframe.
+
+        :param dataframe: dataframe for the data to be preprocessed.
+        :type dataframe: dataframe
+        :param label: dataframe for the label(s) to be preprocessed.
+        :type label: dataframe
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param mode: Mode of run, options: {'Train','predict','validate'}. ##Note: This parameter is no more in this function and would be removed from argument list in next version.
+        :type mode: str
+        :param tagDir: The sub-directory name to store files in. Could be kept empty (i.e. "") or filled with a name. Gets filled automatically when pipeline runs in second mode (automatically), i.e. "FeatureSelection".
+                        ##Note: This is not a user-governed parameter. Internally set and used by the pipeline.
+        :type tagDir: str
+        :param checkNA: A boolean parameter indicating whether to check for nan values in dataframe. default: True
+        :type checkNA: bool
+    '''
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     outfileHTML.write("<h3>"+"No. of "+data_type+" features provided: "+str(len(dataframe.columns)-1)+"</h3>")
     if(isinstance(label,pd.DataFrame)):
@@ -217,6 +287,36 @@ def preprocessing(dataframe , label, data_type, label_type, mode, tagDir, checkN
 
 ##SPLITTING of data into TRAIN and TEST datasets   
 def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_normalize_method, data_type, label_type, dataframe_header, label_header, tagDir):
+    '''
+        Split data (and labels) into train and test sets and calls normalization for them.
+        Returns normalized train and test data and labels.
+
+        :param dataframe: dataframe for the data.
+        :type dataframe: dataframe
+        :param label: dataframe for the label(s).
+        :type label: dataframe
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param mode: Mode of run, options: {'Train','predict','validate'}. ##Note: This parameter is no more in this function and would be removed from argument list in next version.
+        :type mode: str
+        :param tagDir: The sub-directory name to store files in. Could be kept empty (i.e. "") or filled with a name. Gets filled automatically when pipeline runs in second mode (automatically), i.e. "FeatureSelection".
+                        ##Note: This is not a user-governed parameter. Internally set and used by the pipeline.
+        :type tagDir: str
+        :param data_normalize_method: Method used to normalize data, options: {'min_max' , 'Stand_scaler' , 'MaxAbsScaler', 'none'}, default: None
+        :type data_normalize_method: str
+        :param label_normalize_method: Method used to normalize labels, options: {'min_max' , 'Stand_scaler' , 'MaxAbsScaler', 'none'}, default: None
+        :type label_normalize_method: str
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param data_header: data header
+        :type data_header: list
+        :param label_header: label header
+        :type label_header: list
+    '''
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     train, test , Y_train , Y_test = train_test_split(dataframe, label , test_size = t_size)
     
@@ -273,7 +373,48 @@ def splitdata(dataframe , label, t_size, mode_, data_normalize_method, label_nor
 ##MODEL BUILDING: multiple options of modeltypes accepted from user
 def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring_par, gridsearch, param_grid, select_label_var_list, select_data_var_list, data_type, label_type, featureSelFrmModel_flag, tagDir, trainmodel):
     '''
-    initializing model and training the model
+        Initializing the model and executing its training. Calls evaluate method to test the test dataset.
+        Returns the model
+
+        :param train: dataframe for train data.
+        :type train: dataframe
+        :param Y_train: dataframe for train labels.
+        :type Y_train: dataframe
+        :param test: dataframe for test data.
+        :type test: dataframe
+        :param Y_test: dataframe for test labels.
+        :type Y_train: dataframe
+        :param method: Model type, options: {'DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel'}, default: None
+        :type method: str
+        :param params: Model parameters. If empty, default parameters used per scikit-learn library.
+        :type params: dict
+        :param cv_par: K-fold Cross validation splitter number, default: 2
+        :type cv_par: int
+        :param scoring_par: Score metric, default: neg_mean_square_error
+        :type scoring_par: str
+        :param gridsearch: Indicating whether to perform gridsearch for training the model, options: 'True' or 'False', default: 'False'
+        :type gridsearch: str
+        :param param_grid: Parameters for gridsearch for the given model type.
+        :type param_grid: dict
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param featureSelFrmModel_flag: flag to run 'FeatureSelection' mode.
+        :type featureSelFrmModel_flag: bool
+        :param tagDir: The sub-directory name to store files in. Could be kept empty (i.e. "") or filled with a name. Gets filled automatically when pipeline runs in second mode (automatically), i.e. "FeatureSelection".
+                        ##Note: This is not a user-governed parameter. Internally set and used by the pipeline.
+        :type tagDir: str
+        :param select_data_var_list: List of data features to train.
+        :type select_data_var_list: list
+        :param select_label_var_list: List of label features to train.
+        :type select_label_var_list: list
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param trainmodel: Whether to train a model or not, options: True, False, default: None
+        :type trainmodel: bool
     '''
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     outfileHTML.write("<h2 style=text-align:center;color:blue>"+"--------------------------Model Summary-----------------------"+"</h2>"+"\n")
@@ -410,7 +551,30 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
 ##EVALUATE the models for TEST set or validation set.
 def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type, tagDir, gridsearch):
     '''
-    evalauting the model preformance 
+        Evaluating the model preformance and reporting variety of metrics
+        Returns labels that got AUC>0.9 and R-square>0.25
+
+        :param test: data for model evaluation
+        :type test: dataframe
+        :param Y_test: labels for model evaluation 
+        :type Y_test: dataframe
+        :param model: Model to evaluate
+        :type model: model
+        :param model_type: Model type, options: {'DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel'}, default: None
+        :type model_type: str
+        :param gridsearch: Indicating whether to perform gridsearch for training the model, options: 'True' or 'False', default: 'False'
+        :type gridsearch: str
+        :param prefix: Prefix for output file-name
+        :type prefix: str
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param select_label_var_list: List of label features
+        :type select_label_var_list: list
+        :param tagDir: The sub-directory name to store files in. Could be kept empty (i.e. "") or filled with a name. Gets filled automatically when pipeline runs in second mode (automatically), i.e. "FeatureSelection".
+                        ##Note: This is not a user-governed parameter. Internally set and used by the pipeline.
+        :type tagDir: str
     '''
     outfileHTML=open("/data/"+tagDir+model_type+".output.html",'a')
     Y_pred = model.predict(test)
@@ -705,13 +869,67 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
 ## MODEL PREDICTION function    
 def predict(model , test):
     '''
-    get model predictions
+        Get model predictions
+        Returns predicted data as a numpy array
+
+        :param model: Model used to perform prediction
+        :type model: model
+        :param test: data to perform prediction on
+        :type test: dataframe
     '''
     Y_pred = model.predict(test)
     return Y_pred
 
-##PROCESS FUNCTION: Entailing the entire process starting from training through testing and validation per the modes of operation specified by user.       
+##PROCESS FUNCTION       
 def process(data_, label_, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=None):
+    '''
+        PROCESS FUNCTION: Entailing the entire process starting from training through testing and validation per the modes of operation specified by user.
+        Returns None
+
+        :param data_: data file.
+        :type data_: file
+        :param label_: label file.
+        :type label_: file
+        :param data_type: A string indicating the type of data, ex: "imaging" or "gene".
+        :type data_type: str
+        :param label_type: A string indicating the type of label, ex: "imaging" or "gene".
+        :type label_type: str
+        :param corr_method: Correlation method used, options: {'Pearson', 'Spearman'}
+        :type corr_method: str
+        :param corr_threshold: Threshold for correlation co-efficient, options: {-1.0,0.0,0.1...1.0}, default:0.5
+                            ##Note: To silent correlation threshold filtering, set the threshold to -1.0
+        :type corr_threshold: float
+        :param pVal_adjust_method: The method to correct p-values, options: {'holm', 'hochberg', 'hommel', 'bonferroni', 'BH', 'BY', 'fdr', 'none'}, default: BH
+        :type pVal_adjust_method: str
+        :param data_normalize_method: Normalization method for data, options: {'min_max' , 'Stand_scaler' , 'MaxAbsScaler', 'none'}, default: None
+        :type data_normalize_method: str
+        :param label_normalize_method: Normalization method for label, options: {'min_max' , 'Stand_scaler' , 'MaxAbsScaler', 'none'}, default: None
+        :type label_normalize_method: str
+        :param cv_par: K-fold Cross validation splitter number, default: 2
+        :type cv_par: int
+        :param scoring_par: Score metric, default: neg_mean_square_error
+        :type scoring_par: str
+        :param mode: Mode of run, options: {'Train','predict','validate'}. ##Note: This parameter is no more in this function and would be removed from argument list in next version.
+        :type mode: str
+        :param model_type: Model type, options: {'DecisionTree','LinearRegression', 'LinearModel' , 'LASSO', 'multiTaskLASSO', 'multiTaskLinearModel'}, default: None
+        :type model_type: str
+        :param load_model: Model pickel (.pkl) file to load in case mode set to "predict" or "validate"
+        :type load_model: file
+        :param params: Model parameters. If empty, default parameters used per scikit-learn library.
+        :type params: dict
+        :param gridsearch: Indicating whether to perform gridsearch for training the model, options: 'True' or 'False', default: 'False'
+        :type gridsearch: str
+        :param param_grid: Parameters for gridsearch for the given model type.
+        :type param_grid: dict
+        :param prediction_out: Output file to write predicted output to, in case mode set to "predict".
+        :type prediction_out: file
+        :param select_data_headers_for_predict: List of data features to used when mode is set to "predict" or "validate".
+        :type select_data_headers_for_predict: list
+        :param select_label_headers_for_predict: List of data features to used when mode is set to "predict" or "validate".
+        :type select_label_headers_for_predict: list
+        :param featureSelFrmModel_flag: flag to run 'FeatureSelection' mode.
+        :type featureSelFrmModel_flag: bool
+    '''
     if(featureSelFrmModel_flag==None or featureSelFrmModel_flag==0):
         tagDir=""
     elif(featureSelFrmModel_flag==1):
@@ -879,9 +1097,8 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
     else:
         sys.exit("Invalid mode. Should be either Train, predict or validate. Please check your config file.")
 
-## MAIN function. The main starting point of the script. Scans parameters, defines variable and passes on to the process function called below.
+## MAIN function. The main starting point of the script. Scans parameters from config.ini, defines variable and passes on to the process function called below.
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
     parser.add_argument('--data' , help = "data file" , default = 'NULL', type = str)
     parser.add_argument('--label', help = "label file", default = 'NULL', type = str)
