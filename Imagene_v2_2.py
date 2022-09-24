@@ -298,7 +298,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = linear_model.Lasso(**params)
-        if method == 'DecisionTree':
+        elif method == 'DecisionTree':
             if gridsearch == 'True':
                 try:
                     print("starting grid search for Decision Tress")
@@ -307,7 +307,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = tree.DecisionTreeRegressor(**params)  
-        if method == 'LinearRegression':
+        elif method == 'LinearRegression':
             if gridsearch == 'True':
                 try:
                     print("starting grid search for Linear Regression")
@@ -316,7 +316,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = LinearRegression(**params)
-        if method == 'LinearModel': 
+        elif method == 'LinearModel': 
             if gridsearch == 'True':
                 try:
                     print("Starting grid search for ElasticNet")
@@ -325,7 +325,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = ElasticNet(**params)
-        if method == 'multiTaskLASSO':
+        elif method == 'multiTaskLASSO':
             if gridsearch == 'True':
                 try:
                     print(" Starting grid search for MultiTaskLASSO")
@@ -334,7 +334,7 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
                     print("Grid search status:{}".format(grid_search))
             else:
                 model = linear_model.MultiTaskLasso(**params)
-        if method == 'multiTaskLinearModel': 
+        elif method == 'multiTaskLinearModel': 
             if gridsearch == 'True':
                 try:
                     print("Starting grid search for MultiTaskElasticNet")
@@ -393,22 +393,22 @@ def BuildModel(train , Y_train , test , Y_test , method, params, cv_par, scoring
         outfileHTML.close()
         
         ##CALL EVALUATION for TRAIN set
-        evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir)
+        evaluate(model,train,Y_train,select_label_var_list,'train_eval',model_type, data_type, label_type, tagDir, gridsearch)
         
         print(Y_test)
         ##CALL EVALUATION for TEST set
-        returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir)
+        returned_label_resulted=evaluate(model,test,Y_test,select_label_var_list,'test_eval',model_type, data_type, label_type, tagDir, gridsearch)
         
         ##PERMUT each label column of the test dataset 20 times and validate the model. This aids in p-value calculation post run.
         for l in returned_label_resulted:
             for n in range(1,21):
                 Y_test[[l]]=np.random.permutation(Y_test[[l]])
-                evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type, tagDir)
+                evaluate(model, test, Y_test , select_label_var_list, 'validation'+'_permut_'+str(n)+'_'+str(l), model_type, data_type, label_type, tagDir, gridsearch)
         
     return model
 
 ##EVALUATE the models for TEST set or validation set.
-def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type, tagDir):
+def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, data_type, label_type, tagDir, gridsearch):
     '''
     evalauting the model preformance 
     '''
@@ -632,17 +632,20 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     FI_handle=open("/data/"+tagDir+prefix+"_"+"FeatureImportances.txt",'w+')
     X_features=list(test.columns)
     Y_features=list(Y_test.columns)
-    if(model_type!="DecisionTree"):
+    if(gridsearch == 'True'):
+        FI_handle.close()
+    elif(model_type!="DecisionTree"):
         importance = model.coef_
         FI_handle.write("Y_Features, X_features_scored:"+str(X_features)+"\n")
         for u,k in enumerate(importance):
             FI_handle.write(str(Y_features[u])+","+str(k)+"\n")
+        FI_handle.close()
     else:
         importance = model.feature_importances_
         FI_handle.write("Features, Score"+"\n")
         for u,k in enumerate(importance):
             FI_handle.write(str(X_features[u])+","+str(k)+"\n")
-    FI_handle.close()
+        FI_handle.close()
     
 
 
@@ -1005,5 +1008,5 @@ if __name__ == "__main__":
     ##CALL the PROCESS FUNCTION.
     process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=0)
     ##Calling process again with feature selection flag (featureSelFrmModel_flag) equal to 1, so that the feature selection performed using SelectFromModel module (i.e., Feature Selection using Feature Importances from model), and the correlation module is skipped completely.
-    if mode == "Train":
+    if mode == "Train" and grid_search == "False":
         process(args.data, args.label, data_type, label_type, corr_method, corr_threshold, pVal_adjust_method, data_normalize_method, label_normalize_method, cv_par, scoring_par, mode, model_type, load_model, params, grid_search, param_grid, args.prediction_out, select_label_headers_for_predict, select_data_headers_for_predict, featureSelFrmModel_flag=1)
