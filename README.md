@@ -1,3 +1,24 @@
+# Version Update: ImaGenev3.2v: 
+   
+   Python script ImaGenev3.2v.py is operational (use -h for help). Added to the main repo. Web Platform and docker container are currently being updated with the same. Stay tuned!
+   
+   New train.ini reflects sections for parameter-feed for new models and their respective grids. Note that this could be kept empty for defaults to govern.
+
+   # New models added:
+      1) Random Forest
+      2) DecisionTree Classifier
+      3) Multi-layer Perceptron (MLP) Classifier
+      4) Support Vector Classifier (SVC)
+      5) Logistic Regression
+
+# Regression Models carried forward from previous version:
+      6) Decision Tree Regressor
+      7) Linear Regression
+      8) LinearModel
+      9) multiTaskLinearModel
+      10) LASSO
+      11) multiTaskLASSO
+
 # ImaGene
 ImaGene provides researchers with a transparent tool for which to begin radiogenomic analysis and explore possible further directions in their research. A web platform is available here: https://www.imagene.pgxguide.org/index.php (Note: Please use the example data and label files as "Supplementary_Table_BC-Radiomic_features.csv" and "Supplementary_Table_BC-Gene_FPKM.csv" (available in the repo above) in "Input data features" and "Input label features" sections on ImaGene web platform. Kindly refer to the CLI section's Step 4's note below for the guidance on downloading these two input files successfully from the repo above. Kindly also view the "config_IBC_LR.ini" in the repo above for the example settings of values of several parameters that you may want to set/tune on ImaGene web platform during your experimental run thereon).
 
