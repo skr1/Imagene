@@ -19,10 +19,11 @@
       10) LASSO
       11) multiTaskLASSO
 
+# Publication: 
+https://academic.oup.com/bioinformaticsadvances/article/2/1/vbac079/6820948
+
 # ImaGene
 ImaGene provides researchers with a transparent tool for which to begin radiogenomic analysis and explore possible further directions in their research. A web platform is available here: https://www.imagene.pgxguide.org/index.php (Note: Please use the example data and label files as "Supplementary_Table_BC-Radiomic_features.csv" and "Supplementary_Table_BC-Gene_FPKM.csv" (available in the repo above) in "Input data features" and "Input label features" sections on ImaGene web platform. Kindly refer to the CLI section's Step 4's note below for the guidance on downloading these two input files successfully from the repo above. Kindly also view the "config_IBC_LR.ini" in the repo above for the example settings of values of several parameters that you may want to set/tune on ImaGene web platform during your experimental run thereon).
-
-#Imp note: Please cite ImaGene using the preprint below for now. The final (improved) version has been accepted at Oxford Bioinformatics Advances. Reference link would be updated accordingly. Preprint: Sukhadia, Shrey S., et al. (2021), 'ImaGene: A web-based software platform for tumor radiogenomic evaluation and reporting', bioRxiv, 2021.12.02.470994.![image](https://user-images.githubusercontent.com/12850934/194389362-93f88f25-9fc7-4439-bba7-a55bd9756e66.png)
 
 
 For analytical operations, ImaGene requires two input files, each in Comma-Separated Value (CSV) format – one containing imaging features (and their measurements) and another containing omics features for a set of tumor samples. The imaging features can be acquired from feature extraction software such as PyRadiomics, LIFEx, or RaCaT by processing the tumor images using the respective segmentation labels (Koçak et al. 2019; Pfaehler et al. 2019; van Griethuysen et al. 2017). The omics features can be acquired from studies conducted on tumor ROIs in biopsy samples processed in pathological laboratories, and may consist of data pertaining to gene expression, SV (including CNV), SNV, or DNA methylation scores.
@@ -94,6 +95,10 @@ Pedregosa, Fabian, et al. (2011), 'Scikit-learn: Machine learning in Python', Jo
 Pfaehler, Elisabeth, et al. (2019), 'RaCaT: An open source and easy to use radiomics calculator tool', PLOS ONE, 14 (2), e0212223.
 
 van Griethuysen, Joost J. M., et al. (2017), 'Computational Radiomics System to Decode the Radiographic Phenotype', Cancer research (Chicago, Ill.), 77 (21), E104-E07.
+
+# Please cite: 
+https://academic.oup.com/bioinformaticsadvances/article/2/1/vbac079/6820948
+
 
 # LICENSE:
 
