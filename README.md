@@ -1,23 +1,24 @@
-# Version Update: ImaGenev3.2v: 
+# Version Update: ImaGenev3.3v1: 
    
-   Python script ImaGenev3.2v.py is operational (use -h for help). Added to the main repo. Web Platform and docker container are currently being updated with the same. Stay tuned!
-   
+   Python script ImaGenev3_3v1.py is operational (use -h for help). Added to the main repo.
    New train.ini reflects sections for parameter-feed for new models and their respective grids. Note that this could be kept empty for defaults to govern.
 
-   # New models added:
+# Classification-based modelling techniques covered:
       1) Random Forest
       2) DecisionTree Classifier
       3) Multi-layer Perceptron (MLP) Classifier
       4) Support Vector Classifier (SVC)
       5) Logistic Regression
 
-# Regression Models carried forward from previous version:
+# Regression-based modelling techniques covered:
       6) Decision Tree Regressor
       7) Linear Regression
       8) LinearModel
       9) multiTaskLinearModel
       10) LASSO
       11) multiTaskLASSO
+
+Note: Docker container is not updated to the latest version, but older version 2. Stay tuned for updates!
 
 # Publication: 
 https://academic.oup.com/bioinformaticsadvances/article/2/1/vbac079/6820948
