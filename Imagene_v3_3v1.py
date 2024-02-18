@@ -34,7 +34,8 @@
 ##Version 3.3v1: Introducing RobustScaler as a normalization technique. Permutation tests now occur only for labels that satisfy AUC>0.7 and R-square>0.25, it executed previously for either condition - line 1002.
 ##Author: Shrey Sukhadia
 #!/usr/bin/python
-from cProfile import label
+import base64
+from cProfile import Profile
 from graphviz import Source
 import matplotlib as mpl
 mpl.use('Agg')
@@ -42,7 +43,6 @@ import os, re, sys, math
 import argparse
 import numpy as np
 import pandas as pd
-#from pandas.stats.api import ols
 import joblib
 import pickle
 import configparser
@@ -52,7 +52,6 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.feature_selection import SelectFromModel
 from sklearn import preprocessing
-#from sklearn import tree
 from sklearn.preprocessing import MaxAbsScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
@@ -71,15 +70,13 @@ from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import auc
 from scipy import stats
-from scipy.interpolate import make_interp_spline, BSpline
+from scipy.interpolate import UnivariateSpline
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
-#model packages
 from sklearn import linear_model
 from sklearn import tree
 from sklearn.linear_model import ElasticNet
 from sklearn.linear_model import MultiTaskElasticNet
-from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -93,12 +90,9 @@ import scikitplot as skplt
 from math import sqrt
 import base64
 from datetime import datetime
-#import statsmodels as statsm
-#import statsmodels.api as smapi
-#from mpl_toolkits.mplot3d import Axes3D
-#import rpy2.robjects as R
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import FloatVector
+
 ##Correlation function establishes correlations between gene and imaging features and calculates FDR adjusted pvalues further to establish statistical significance of those correlations.
 def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_threshold,pVal_adjust_method, tagDir):
     pval=dict()
@@ -169,9 +163,11 @@ def correlation(d_1,d_2,d_1_header,d_2_header, model_type, corr_method, corr_thr
             mp.title("Top significant correlations (FDR_adjusted_pValue<0.05) for "+i+" features", size=16)
         mp.xticks(rotation=90)
         mp.yticks(size=7)
-        mp.savefig(str(save_dir)+''+tagDir+'Correlation_for_'+i+'_features.png',orientation='landscape',dpi=90,bbox_inches='tight')
-        data_image = open(str(save_dir)+tagDir+'Correlation_for_'+i+'_features.png', 'rb').read().encode('base64').replace('\n', '')
-        image_tag_list.append('<img src="data:image/png;base64,{0}" style="max-width:50%;">'.format(data_image))
+        fig_path = str(save_dir) + tagDir + 'Correlation_for_' + i + '_features.png'
+        mp.savefig(fig_path, orientation='landscape', dpi=90, bbox_inches='tight')
+        #mp.savefig(str(save_dir)+''+tagDir+'Correlation_for_'+i+'_features.png',orientation='landscape',dpi=90,bbox_inches='tight')
+        #data_image = open(str(save_dir)+tagDir+'Correlation_for_'+i+'_features.png', 'rb').read().encode('base64').replace('\n', '')
+        #image_tag_list.append('<img src="data:image/png;base64,{0}" style="max-width:50%;">'.format(data_image))
         mp.clf()
 
     outfileHTML=open(str(save_dir)+tagDir+model_type+".output.html",'a')
@@ -889,7 +885,10 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     outfileHTML.write("<h5>"+"All such features with their High 'RMSE/Stdev' values could be found in output file: "+prefix+"_"+model_type+"_Labels_with_High_Ratio.csv"+"</h4>"+"\n"+"\n")
     outfileHTML.write("<h3>"+heading+" for label features showing Low 'RMSE/Stdev' (<=1.0)"+"</h3>"+"\n")
     
-    data_image1 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_test_result_plots_low_ratio.png', 'rb').read().encode('base64').replace('\n', '')
+    dmg1 = f"{save_dir}{tagDir}{prefix}_{model_type}_test_result_plots_low_ratio.png"
+    with open(dmg1, 'rb') as image_file:
+            data_image1 = base64.b64encode(image_file.read()).decode('utf-8').replace('\n', '')
+    #data_image1 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_test_result_plots_low_ratio.png', 'rb').read().encode('base64').replace('\n', '')
     img_tag1 = '<img src="data:image/png;base64,{0}">'.format(data_image1)
     outfileHTML.write(img_tag1+"\n")
 
@@ -898,7 +897,11 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         img_tag2 = '<img src="data:image/png;base64,{0}">'.format(data_image2)
         outfileHTML.write(img_tag2+"\n")
     
-    data_image3 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png', 'rb').read().encode('base64').replace('\n', '')
+    dmg3 = f"{save_dir}{tagDir}{prefix}_{model_type}_rmse_mean_std_and_ratio.png"
+    with open(dmg3, 'rb') as image_file:
+        # Base64 encode and then decode to string to remove newlines if necessary
+            data_image3 = base64.b64encode(image_file.read()).decode('utf-8').replace('\n', '')
+    #data_image3 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_rmse_mean_std_and_ratio.png', 'rb').read().encode('base64').replace('\n', '')
     img_tag3 = '<img src="data:image/png;base64,{0}">'.format(data_image3)
     outfileHTML.write(img_tag3+"\n")
 
@@ -936,7 +939,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
     label_resulted=[]
     if(model_type == 'RandomForest' or model_type == 'DecisionTreeClassifier' or model_type == 'MLPClassifier' or model_type == 'LogisticRegression' or model_type == "SVC"):
         for l in select_label_var_list:
-            print l
+            print (l)
             fpr, tpr, thresholds = roc_curve(Y_test_df[[l]],Y_pred_df[[l]])
             AUC_value=roc_auc_score(Y_test_df[[l]],Y_pred_df[[l]])
             if(AUC_value>0.70 and r2_score_dict[l]>0.25):
@@ -944,8 +947,8 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
                     label_resulted.append(l)
             AUC_fH.write(l+"\t"+str(AUC_value)+"\n")
             if(math.isnan(float(AUC_value))):
-                print "###AUC_value is nan#######"
-                print fpr; print tpr; print "#################"
+                print("###AUC_value is nan#######")
+                print (fpr); print (tpr); print("#################")
             else:
                 mp.xlabel('False Positive Rate')
                 mp.ylabel('True Positive Rate')
@@ -958,7 +961,11 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
                 mp.legend(loc="lower right")
                 mp.savefig(str(save_dir)+tagDir+prefix+'_'+model_type+'_AUC'+l+'.png',orientation='landscape',dpi=100,bbox_inches='tight')
                 mp.clf()
-                data_image4 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_AUC'+l+'.png', 'rb').read().encode('base64').replace('\n', '')
+                dmg4 = f"{save_dir}{tagDir}{prefix}_{model_type}_AUC{l}.png"
+                with open(dmg4, 'rb') as image_file:
+                        # Base64 encode the binary data and then decode to a string, removing newlines if necessary
+                            data_image4 = base64.b64encode(image_file.read()).decode('utf-8').replace('\n', '')
+                #data_image4 = open(str(save_dir)+tagDir+prefix+'_'+model_type+'_AUC'+l+'.png', 'rb').read().encode('base64').replace('\n', '')
                 img_tag4 = '<img src="data:image/png;base64,{0}">'.format(data_image4)
                 outfileHTML.write(img_tag4+"\n")
         AUC_fH.close()
@@ -976,14 +983,14 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
         #tree.export_graphviz(model, out_file=prefix+'_'+model_type+'_tree.dot')
         return label_resulted
     for l in select_label_var_list:
-        print l
+        print (l)
         #fig, ax_=mp.subplots(1,1,figsize=(9,9))
         decision_threshold_list=[]
         AUC_value_list=[]
         #print Y_test_df[l]
         #print Y_test_df[[l]]
         for i in decision_thresholds:
-            print i
+            print (i)
             Y_test_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_test_df[[l]])),threshold=i)
             #Y_pred_df_n=binarize(pd.DataFrame.to_numpy(abs(Y_pred_df[[l]])),threshold=i)
             Y_pred_df_n=Y_pred_df[[l]]##Keeping Ypredict to be continuous,i.e. as it is.
@@ -993,9 +1000,9 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
             else:
                 #fpr, tpr, thresholds = roc_curve(Y_test_df[[l]], Y_pred_df[[l]])
                 fpr, tpr, thresholds = roc_curve(Y_test_df_n,Y_pred_df_n)
-                print thresholds
-                print fpr
-                print tpr
+                print (thresholds)
+                print (fpr)
+                print (tpr)
                 #print auc(fpr,tpr)
                 #print l; print i
                 AUC_value=auc(fpr,tpr)
@@ -1004,8 +1011,8 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
                         label_resulted.append(l)
                 AUC_fH.write(l+"\t"+str(AUC_value)+"\t"+str(i)+"\n")
                 if(math.isnan(float(AUC_value))):
-                    print "###AUC_value is nan#######"
-                    print fpr; print tpr; print "#################"
+                    print ("###AUC_value is nan#######")
+                    print (fpr); print (tpr); print ("#################")
                     continue
                 AUC_value_list.append(AUC_value)
                 decision_threshold_list.append(i)
@@ -1015,7 +1022,7 @@ def evaluate(model , test , Y_test, select_label_var_list, prefix, model_type, d
             mp.plot(decision_threshold_list, AUC_value_list, label = '%s' % (l), linewidth=1, alpha=3)
             #label_resulted.append(l)
         else:
-            print l+" has value list is not greater than or equal to 8"
+            print (l+" has value list is not greater than or equal to 8")
     AUC_fH.close()
 
     mp.legend(loc=(1.04, 0))
@@ -1080,7 +1087,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             select_data_var_list,select_label_var_list = correlation(dataframe,label,dataframe_header,label_header, model_type, corr_method, corr_threshold, pVal_adjust_method, tagDir)
         elif(featureSelFrmModel_flag==1):
             select_data_var_list=dataframe_header; select_label_var_list=label_header
-        print select_label_var_list
+        print (select_label_var_list)
         #print label
         #print label[select_label_var_list]
         #print "filtered dataframe"; print filtered_dataframe
@@ -1093,8 +1100,8 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
         #print("Below is the final list of data features used for training")
         #print(list(dataframe.keys()))
         label = label[select_label_var_list]
-        print label
-        print dataframe
+        print (label)
+        print (dataframe)
 
         outfileHTML.write("<h2>"+"Below is the list of "+label_type+" features"+"</h2>"+"\n")
         outfileHTML.write("<h5>"+str(list(label.keys()))+"</h5>"+"\n")
@@ -1200,7 +1207,7 @@ def process(data_, label_, data_type, label_type, corr_method, corr_threshold, p
             outfileH.close()
         except IOError:
             print("Probably saved model file is not provided/check path")
-        except (IndexError, ValueError), err_:
+        except (IndexError, ValueError) as err_:
             print("Seems an IndexError or a ValueError was encountered during prediction. Error msg is as follows: "+str(err_))
     
     elif mode == 'validate':
@@ -1286,12 +1293,12 @@ if __name__ == "__main__":
     ##getting select data and label features from respective parameters in 'modes' section
     select_data_headers_for_predict = config['modes']['select_data_headers_for_predict']
     select_label_headers_for_predict = config['modes']['select_label_headers_for_predict']
-    if isinstance(select_data_headers_for_predict,unicode):
+    if isinstance(select_data_headers_for_predict, str):
         try:
             select_data_headers_for_predict=ast.literal_eval(select_data_headers_for_predict)
         except ValueError:
             select_data_headers_for_predict=select_data_headers_for_predict.encode('utf-8')
-    if isinstance(select_label_headers_for_predict,unicode):
+    if isinstance(select_label_headers_for_predict, str):
         try:
             select_label_headers_for_predict=ast.literal_eval(select_label_headers_for_predict)
         except ValueError:
@@ -1303,12 +1310,13 @@ if __name__ == "__main__":
     for each_section in config.sections():
         #print each_section
         if each_section == model_type and grid_search == 'False':
-            print "Section for model "+each_section+" detected."
+            print ("Section for model "+each_section+" detected.")
         elif each_section == model_type+"_grid" and grid_search == 'True':
             section_flag=1
-            print "Grid section "+each_section+" detected and grid_search is set True."
+            print ("Grid section "+each_section+" detected and grid_search is set True.")
         else:
             continue
+        np_flag = 0
         for (each_key, each_val) in config.items(each_section):
             #print each_key; print each_val
             if each_val.replace('.','',1).isdigit() == True:
@@ -1317,23 +1325,31 @@ if __name__ == "__main__":
                 else:
                     each_val = float(each_val) 
             elif isinstance(each_val,str):
+                print(" YOU ARE IN STR")
+                print(each_val)
                 if each_val == 'True':
                     each_val = True
                 elif each_val == 'False':
                     each_val = False
                 elif each_val == 'None':
                     each_val = None
+                if re.search(",", each_val) != 0:
+                    each_val = np.array(each_val.split(","))
+                    print(each_val)
+                    np_flag = 1
             elif isinstance(each_val,unicode):
+                print(each_val)
                 try:
                     each_val=ast.literal_eval(each_val)
                 except ValueError:
                     each_val=each_val.encode('utf-8')
-            if each_val != '':
-                if section_flag == 0 :
-                    params[each_key] = each_val
-                    #print str(params)
-                elif section_flag == 1 :
-                    param_grid[each_key] = each_val
+            if np_flag == 0:
+                if each_val != '':
+                    if section_flag == 0 :
+                        params[each_key] = each_val
+                        #print str(params)
+                    elif section_flag == 1 :
+                        param_grid[each_key] = each_val
 
     if len(params) == 0:
         print_params = "default"
