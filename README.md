@@ -1,7 +1,8 @@
-# Version Update: ImaGenev3.3v1: 
+# Version Update: ImaGenev3.3v1 (python3-compatible): 
    
    Python script ImaGenev3_3v1.py is operational (use -h for help). Added to the main repo.
    New train.ini reflects sections for parameter-feed for new models and their respective grids. Note that this could be kept empty for defaults to govern.
+   Note: Please run Check_Package.py prior to running ImaGene. Please use Python version 3 for its execution.
 
 # Classification-based modelling techniques covered:
       1) Random Forest
